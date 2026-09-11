@@ -1,0 +1,75 @@
+﻿@model IEnumerable<JobsMvc.Models.Entities.CompanyProfile>
+
+@{
+    ViewData["Title"] = "Manage Companies";
+    var showPendingOnly = (bool)ViewData["ShowPendingOnly"];
+}
+
+<h1>Manage Companies</h1>
+
+<div class="mb-3">
+    @if (showPendingOnly)
+    {
+        <a asp-action="Companies" asp-route-showPendingOnly="false" class="btn btn-outline-secondary btn-sm">Show All Companies</a>
+    }
+    else
+    {
+        <a asp-action="Companies" asp-route-showPendingOnly="true" class="btn btn-outline-secondary btn-sm">Show Pending Only</a>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">@(showPendingOnly ? "No companies waiting for approval." : "No companies found.")</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Company Name</th>
+                <th>Industry</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var company in Model)
+            {
+                <tr>
+                    <td>@company.CompanyName</td>
+                    <td>@company.Industry</td>
+                    <td>
+                        @if (company.IsApproved)
+                        {
+                            <span class="badge bg-success">Approved</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Pending</span>
+                        }
+                    </td>
+                    <td>
+                        @if (!company.IsApproved)
+                        {
+                            <form asp-action="Approve" asp-route-id="@company.Id" asp-route-showPendingOnly="@showPendingOnly" method="post" style="display:inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-action="Reject" asp-route-id="@company.Id" asp-route-showPendingOnly="@showPendingOnly" method="post" style="display:inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Revoke approval for this company?')">
+                                    Reject / Revoke
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

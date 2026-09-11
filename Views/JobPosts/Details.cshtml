@@ -1,0 +1,47 @@
+﻿@model JobsMvc.Models.Entities.JobPost
+
+@{
+    ViewData["Title"] = "Job Details";
+}
+
+<h1>@Model.Title</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Company</dt>
+    <dd class="col-sm-9">@Model.Company?.CompanyName</dd>
+
+    <dt class="col-sm-3">Description</dt>
+    <dd class="col-sm-9">@Model.Description</dd>
+
+    <dt class="col-sm-3">Type</dt>
+    <dd class="col-sm-9">@Model.JobType</dd>
+
+    <dt class="col-sm-3">Experience Level</dt>
+    <dd class="col-sm-9">@Model.ExperienceLevel</dd>
+
+    <dt class="col-sm-3">Salary</dt>
+    <dd class="col-sm-9">@Model.MinSalary - @Model.MaxSalary</dd>
+
+    <dt class="col-sm-3">City</dt>
+    <dd class="col-sm-9">@Model.City?.Name</dd>
+
+    <dt class="col-sm-3">Category</dt>
+    <dd class="col-sm-9">@Model.Category?.Name</dd>
+
+    <dt class="col-sm-3">Closing Date</dt>
+    <dd class="col-sm-9">@(Model.ClosingDate?.ToString("dd/MM/yyyy") ?? "Not specified")</dd>
+
+    <dt class="col-sm-3">Status</dt>
+    <dd class="col-sm-9">@(Model.IsActive ? "Active" : "Closed")</dd>
+
+    <dt class="col-sm-3">Required Skills</dt>
+    <dd class="col-sm-9">
+        @foreach (var rs in Model.RequiredSkills)
+        {
+            <span class="badge bg-primary">@rs.Skill.Name</span>
+        }
+    </dd>
+</dl>
+
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+<a asp-action="Index" class="btn btn-secondary">Back</a>

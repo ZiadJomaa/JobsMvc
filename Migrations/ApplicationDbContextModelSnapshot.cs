@@ -110,7 +110,7 @@ namespace JobsMvc.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("JobsMvc.Models.Entities.City", b =>
@@ -127,7 +127,7 @@ namespace JobsMvc.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cities");
+                    b.ToTable("Cities", (string)null);
                 });
 
             modelBuilder.Entity("JobsMvc.Models.Entities.CompanyProfile", b =>
@@ -150,7 +150,7 @@ namespace JobsMvc.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CompanyProfiles");
+                    b.ToTable("CompanyProfiles", (string)null);
                 });
 
             modelBuilder.Entity("JobsMvc.Models.Entities.CompanyProfile_City", b =>
@@ -165,7 +165,7 @@ namespace JobsMvc.Migrations
 
                     b.HasIndex("CityId");
 
-                    b.ToTable("CompanyProfileCities");
+                    b.ToTable("CompanyProfileCities", (string)null);
                 });
 
             modelBuilder.Entity("JobsMvc.Models.Entities.JobApplication", b =>
@@ -201,7 +201,7 @@ namespace JobsMvc.Migrations
 
                     b.HasIndex("JobSeekerId");
 
-                    b.ToTable("JobApplications");
+                    b.ToTable("JobApplications", (string)null);
                 });
 
             modelBuilder.Entity("JobsMvc.Models.Entities.JobPost", b =>
@@ -259,7 +259,7 @@ namespace JobsMvc.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("JobPosts");
+                    b.ToTable("JobPosts", (string)null);
                 });
 
             modelBuilder.Entity("JobsMvc.Models.Entities.JobPost_Skill", b =>
@@ -274,7 +274,7 @@ namespace JobsMvc.Migrations
 
                     b.HasIndex("SkillId");
 
-                    b.ToTable("JobPostSkills");
+                    b.ToTable("JobPostSkills", (string)null);
                 });
 
             modelBuilder.Entity("JobsMvc.Models.Entities.JobSeekerProfile", b =>
@@ -302,7 +302,7 @@ namespace JobsMvc.Migrations
 
                     b.HasIndex("CityId");
 
-                    b.ToTable("JobSeekerProfiles");
+                    b.ToTable("JobSeekerProfiles", (string)null);
                 });
 
             modelBuilder.Entity("JobsMvc.Models.Entities.JobSeeker_Skill", b =>
@@ -317,7 +317,7 @@ namespace JobsMvc.Migrations
 
                     b.HasIndex("SkillId");
 
-                    b.ToTable("JobSeekerSkills");
+                    b.ToTable("JobSeekerSkills", (string)null);
                 });
 
             modelBuilder.Entity("JobsMvc.Models.Entities.Resume", b =>
@@ -350,7 +350,7 @@ namespace JobsMvc.Migrations
 
                     b.HasIndex("JobSeekerId");
 
-                    b.ToTable("Resumes");
+                    b.ToTable("Resumes", (string)null);
                 });
 
             modelBuilder.Entity("JobsMvc.Models.Entities.Skill", b =>
@@ -367,7 +367,7 @@ namespace JobsMvc.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Skills");
+                    b.ToTable("Skills", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

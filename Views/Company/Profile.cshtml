@@ -1,0 +1,19 @@
+﻿@using JobsMvc.Models.Entities
+@model CompanyProfile
+
+<h1>Company Profile</h1>
+
+<h2>@Model.CompanyName</h2>
+
+<p>Industry: @Model.Industry</p>
+
+<p>Approval Status: @(Model.IsApproved ? "Approved" : "Pending")</p>
+
+<h3>Operating Cities</h3>
+
+<ul>
+    @foreach (var companyCity in Model.OperatingCities)
+    {
+        <li>@companyCity.City.Name</li>
+    }
+</ul>

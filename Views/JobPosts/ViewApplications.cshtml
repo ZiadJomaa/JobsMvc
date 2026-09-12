@@ -1,0 +1,51 @@
+﻿@model JobsMvc.Models.Entities.JobPost
+
+@{
+    ViewData["Title"] = "Applicants for " + Model.Title;
+}
+
+<h2>Applicants for: @Model.Title</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<table class="table table-striped mt-4">
+    <thead>
+        <tr>
+            <th>Applicant ID</th>
+            <th>Applied At</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var app in Model.Applications)
+        {
+            <tr>
+                <td>@app.JobSeekerId</td>
+                <td>@app.AppliedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    <span class="badge bg-@(app.Status == JobsMvc.Models.Enums.ApplicationStatus.Pending ? "warning" : (app.Status == JobsMvc.Models.Enums.ApplicationStatus.Accepted ? "success" : "danger"))">
+                        @app.Status
+                    </span>
+                </td>
+                <td>
+                    <form asp-action="UpdateApplicationStatus" method="post" style="display:inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="applicationId" value="@app.Id" />
+                        <button type="submit" name="status" value="@JobsMvc.Models.Enums.ApplicationStatus.Accepted" class="btn btn-sm btn-success">Accept</button>
+                        <button type="submit" name="status" value="@JobsMvc.Models.Enums.ApplicationStatus.Rejected" class="btn btn-sm btn-danger">Reject</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary mt-3">Back to Jobs</a>
+

@@ -15,6 +15,22 @@
     }
 </p>
 
+<!-- نموذج البحث والفلترة -->
+<form asp-action="Index" method="get" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <input type="text" name="searchTitle" class="form-control" placeholder="Search by Job Title..." value="@Context.Request.Query["searchTitle"]" />
+    </div>
+    <div class="col-md-3">
+        @Html.DropDownList("cityId", ViewBag.Cities as SelectList, "All Cities", new { @class = "form-control" })
+    </div>
+    <div class="col-md-3">
+        @Html.DropDownList("categoryId", ViewBag.Categories as SelectList, "All Categories", new { @class = "form-control" })
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-success w-100">Search</button>
+    </div>
+</form>
+
 <table class="table table-striped">
     <thead>
         <tr>
@@ -31,7 +47,7 @@
         @foreach (var job in Model)
         {
             <tr>
-                <td>@job.Title</td>
+                <td><a asp-action="Details" asp-route-id="@job.Id">@job.Title</a></td>
                 <td>@job.Company?.CompanyName</td>
                 <td>@job.City?.Name</td>
                 <td>@job.Category?.Name</td>

@@ -63,7 +63,7 @@ app.MapRazorPages()
    .WithStaticAssets();
    
 // Seed initial data
-using (var scope = app.Services.CreateScope())
+  using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try

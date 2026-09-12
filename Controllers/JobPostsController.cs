@@ -1,5 +1,6 @@
 ﻿using JobsMvc.Data;
 using JobsMvc.Models.Entities;
+using JobsMvc.Models.Enums;
 using JobsMvc.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,20 +19,39 @@ namespace JobsMvc.Controllers
             _context = context;
         }
 
-        
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTitle, int? cityId, int? categoryId)
         {
-            var jobPosts = await _context.JobPosts
+            var query = _context.JobPosts
                 .Include(j => j.Company)
                 .Include(j => j.City)
                 .Include(j => j.Category)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTitle))
+            {
+                query = query.Where(j => j.Title.Contains(searchTitle));
+            }
+
+            if (cityId.HasValue)
+            {
+                query = query.Where(j => j.CityId == cityId.Value);
+            }
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(j => j.CategoryId == categoryId.Value);
+            }
+
+            var jobPosts = await query
                 .OrderByDescending(j => j.CreatedAt)
                 .ToListAsync();
+
+            ViewBag.Cities = new SelectList(await _context.Cities.OrderBy(c => c.Name).ToListAsync(), "Id", "Name", cityId);
+            ViewBag.Categories = new SelectList(await _context.Categories.OrderBy(c => c.Name).ToListAsync(), "Id", "Name", categoryId);
 
             return View(jobPosts);
         }
 
-      
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -111,9 +131,7 @@ namespace JobsMvc.Controllers
                 ClosingDate = vm.ClosingDate,
                 CityId = vm.CityId,
                 CategoryId = vm.CategoryId,
-
                 CompanyId = companyId,
-
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -127,7 +145,6 @@ namespace JobsMvc.Controllers
             }
 
             _context.JobPosts.Add(jobPost);
-
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
@@ -178,9 +195,7 @@ namespace JobsMvc.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Company")]
-        public async Task<IActionResult> Edit(
-            int id,
-            JobPostFormViewModel vm)
+        public async Task<IActionResult> Edit(int id, JobPostFormViewModel vm)
         {
             if (id != vm.Id)
                 return NotFound();
@@ -215,7 +230,6 @@ namespace JobsMvc.Controllers
             jobPost.CityId = vm.CityId;
             jobPost.CategoryId = vm.CategoryId;
 
-            
             jobPost.RequiredSkills.Clear();
 
             foreach (var skillId in vm.SelectedSkillIds)
@@ -277,13 +291,11 @@ namespace JobsMvc.Controllers
                 return NotFound();
 
             _context.JobPosts.Remove(jobPost);
-
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
-        
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Company")]
@@ -303,14 +315,60 @@ namespace JobsMvc.Controllers
                 return NotFound();
 
             jobPost.IsActive = false;
-
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task PopulateDropdownsAsync(
-            JobPostFormViewModel vm)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> Apply(int jobPostId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId == null)
+                return Unauthorized();
+
+            // التأكد من وجود بروفايل للباحث وإنشاؤه تلقائياً لمنع إيرور الـ Foreign Key
+            var jobSeekerProfile = await _context.JobSeekerProfiles
+                .FirstOrDefaultAsync(s => s.Id == userId);
+
+            if (jobSeekerProfile == null)
+            {
+                jobSeekerProfile = new JobSeekerProfile
+                {
+                    Id = userId
+                };
+                _context.JobSeekerProfiles.Add(jobSeekerProfile);
+                await _context.SaveChangesAsync();
+            }
+
+            var existingApplication = await _context.JobApplications
+                .FirstOrDefaultAsync(a => a.JobPostId == jobPostId && a.JobSeekerId == userId);
+
+            if (existingApplication != null)
+            {
+                TempData["Error"] = "You have already applied for this job.";
+                return RedirectToAction(nameof(Details), new { id = jobPostId });
+            }
+
+            var application = new JobApplication
+            {
+                JobPostId = jobPostId,
+                JobSeekerId = userId,
+                AppliedAt = DateTime.UtcNow,
+                Status = ApplicationStatus.Pending
+            };
+
+            _context.JobApplications.Add(application);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Your application has been submitted successfully!";
+            return RedirectToAction(nameof(Details), new { id = jobPostId });
+        }
+
+        private async Task PopulateDropdownsAsync(JobPostFormViewModel vm)
         {
             vm.Cities = new SelectList(
                 await _context.Cities
@@ -328,11 +386,56 @@ namespace JobsMvc.Controllers
                 "Name",
                 vm.CategoryId);
 
-         
             vm.AllSkills = await _context.Skills
                 .OrderBy(s => s.Name)
                 .ToListAsync();
         }
+
+        [Authorize(Roles = "Company")]
+        public async Task<IActionResult> ViewApplications(int id)
+        {
+            var companyId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var jobPost = await _context.JobPosts
+                .Include(j => j.Applications)
+                    .ThenInclude(a => a.JobSeeker)
+                .FirstOrDefaultAsync(j => j.Id == id && j.CompanyId == companyId);
+
+            if (jobPost == null)
+                return NotFound();
+
+            return View(jobPost);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Company")]
+        public async Task<IActionResult> UpdateApplicationStatus(int applicationId, ApplicationStatus status)
+        {
+            var application = await _context.JobApplications
+                .Include(a => a.JobPost)
+                .FirstOrDefaultAsync(a => a.Id == applicationId);
+
+            if (application == null)
+                return NotFound();
+
+            var companyId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (application.JobPost.CompanyId != companyId)
+                return Forbid();
+
+            application.Status = status;
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Application status updated successfully!";
+            return RedirectToAction(nameof(ViewApplications), new { id = application.JobPostId });
+        }
+
+
+
+
+
+
+
+
     }
 }
-

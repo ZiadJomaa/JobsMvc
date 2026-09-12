@@ -4,6 +4,23 @@
     ViewData["Title"] = "Job Details";
 }
 
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <h1>@Model.Title</h1>
 
 <dl class="row">
@@ -43,5 +60,20 @@
     </dd>
 </dl>
 
-<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
-<a asp-action="Index" class="btn btn-secondary">Back</a>
+<div class="mt-3 mb-3">
+    @if (Model.IsActive)
+    {
+        <form asp-action="Apply" method="post" style="display:inline;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="jobPostId" value="@Model.Id" />
+            <button type="submit" class="btn btn-success">Apply Now</button>
+        </form>
+    }
+
+    @if (User.IsInRole("Company"))
+    {
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+    }
+
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</div>

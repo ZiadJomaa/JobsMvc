@@ -5,60 +5,115 @@
     ViewData["Title"] = "Edit Company Profile";
 }
 
-<h1>Edit Company Profile</h1>
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="Id" />
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
 
-    <div class="mb-3">
-        <label asp-for="CompanyName" class="form-label"></label>
-        <input asp-for="CompanyName" class="form-control" />
-        <span asp-validation-for="CompanyName" class="text-danger"></span>
-    </div>
+                <div class="card shadow-sm border-0 p-4 p-md-5 mb-5 rounded-3">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="mb-0 text-primary fw-bold">Edit Company Profile</h3>
+                        <a asp-action="Profile" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Profile
+                        </a>
+                    </div>
 
-    <div class="mb-3">
-        <label asp-for="Industry" class="form-label"></label>
-        <input asp-for="Industry" class="form-control" />
-        <span asp-validation-for="Industry" class="text-danger"></span>
-    </div>
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="LogoPath" />
+                        <input type="hidden" asp-for="IsApproved" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-    <div class="mb-3">
-        <label asp-for="LogoPath" class="form-label"></label>
-        <input asp-for="LogoPath" class="form-control" placeholder="/uploads/logos/company.png" />
-        <small class="text-muted d-block">Temporary text field — will become a real file upload later.</small>
-    </div>
+                        <!-- Logo Upload Section -->
+                        <div class="text-center mb-4 pb-3 border-bottom">
+                            <img src="@(string.IsNullOrEmpty(Model.LogoPath) ? "/img/com-logo-1.jpg" : Model.LogoPath)" 
+                                 class="rounded shadow-sm mb-3 border p-1" 
+                                 style="width: 100px; height: 100px; object-fit: contain;" alt="Company Logo" />
+                            <div class="col-md-6 mx-auto">
+                                <label for="logoFile" class="form-label fw-bold small text-muted">Upload New Logo</label>
+                                <input type="file" id="logoFile" name="logoFile" class="form-control" accept="image/*" />
+                            </div>
+                        </div>
 
-    <div class="mb-3">
-        <label class="form-label">Approval Status</label>
-        <div>
-            @if (Model.IsApproved)
-            {
-                <span class="badge bg-success">Approved</span>
-            }
-            else
-            {
-                <span class="badge bg-secondary">Pending Admin Approval</span>
-            }
-        </div>
-        <small class="text-muted">Only an Admin can change this.</small>
-    </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="CompanyName" class="form-label fw-bold">Company Name</label>
+                                <input asp-for="CompanyName" class="form-control py-2" placeholder="e.g. Tech Solutions" />
+                                <span asp-validation-for="CompanyName" class="text-danger small"></span>
+                            </div>
 
-    <div class="mb-3">
-        <label class="form-label">Operating Cities</label>
-        <div class="border rounded p-2" style="max-height:200px; overflow-y:auto;">
-            @foreach (var city in Model.AllCities)
-            {
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" name="SelectedCityIds" value="@city.Id"
-                           id="city_@city.Id"
-                           checked="@(Model.SelectedCityIds.Contains(city.Id))" />
-                    <label class="form-check-label" for="city_@city.Id">@city.Name</label>
+                            <div class="col-md-6">
+                                <label asp-for="Industry" class="form-label fw-bold">Industry</label>
+                                <input asp-for="Industry" class="form-control py-2" placeholder="e.g. Software, Healthcare, Finance" />
+                                <span asp-validation-for="Industry" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted">Account Status</label>
+                                <div>
+                                    @if (Model.IsApproved)
+                                    {
+                                        <span class="badge bg-success py-2 px-3">
+                                            <i class="bi bi-check-circle me-1"></i> Approved
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark py-2 px-3">
+                                            <i class="bi bi-clock-history me-1"></i> Pending Admin Approval
+                                        </span>
+                                    }
+                                    <small class="text-muted ms-2">(Verification is managed by administrators)</small>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <label class="form-label fw-bold d-block mb-2">Operating Cities</label>
+                                <div class="border rounded-3 p-3 bg-light" style="max-height: 220px; overflow-y: auto;">
+                                    <div class="row g-2">
+                                        @if (Model.AllCities != null && Model.AllCities.Any())
+                                        {
+                                            @foreach (var city in Model.AllCities)
+                                            {
+                                                <div class="col-md-4 col-6">
+                                                    <div class="form-check">
+                                                        <input type="checkbox" class="form-check-input" name="SelectedCityIds" value="@city.Id"
+                                                               id="city_@city.Id"
+                                                               @(Model.SelectedCityIds != null && Model.SelectedCityIds.Contains(city.Id) ? "checked" : "") />
+                                                        <label class="form-check-label small" for="city_@city.Id">@city.Name</label>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">No cities available to select.</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
+                                <a asp-action="Profile" class="btn btn-outline-secondary px-4 py-2">Cancel</a>
+                                <button type="submit" class="btn btn-primary px-5 py-2 fw-bold">Save Changes</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-            }
+
+            </div>
         </div>
     </div>
+</div>
 
-    <button type="submit" class="btn btn-primary">Save Changes</button>
-    <a asp-action="Profile" asp-route-id="@Model.Id" class="btn btn-secondary">Back to Profile</a>
-</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

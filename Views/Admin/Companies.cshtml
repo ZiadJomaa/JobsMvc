@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Manage Companies";
-    var showPendingOnly = (bool)ViewData["ShowPendingOnly"];
+   var showPendingOnly = (bool?)ViewData["ShowPendingOnly"] ?? false;
 }
 
 <h1>Manage Companies</h1>

@@ -9,14 +9,15 @@ using System.Security.Claims;
 namespace JobsMvc.Controllers
 {
     [Authorize(Roles = "Company")]
-
     public class CompanyController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public CompanyController(ApplicationDbContext context)
+        public CompanyController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public async Task<IActionResult> Profile()
@@ -37,7 +38,6 @@ namespace JobsMvc.Controllers
             return View(company);
         }
 
-        
         public async Task<IActionResult> Edit()
         {
             var companyId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -71,7 +71,7 @@ namespace JobsMvc.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(CompanyProfileFormViewModel vm)
+        public async Task<IActionResult> Edit(CompanyProfileFormViewModel vm, IFormFile? logoFile)
         {
             var companyId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -91,22 +91,40 @@ namespace JobsMvc.Controllers
             if (company == null)
                 return NotFound();
 
+            if (logoFile != null && logoFile.Length > 0)
+            {
+                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "logos");
+                Directory.CreateDirectory(uploadsFolder);
+                string uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(logoFile.FileName)}";
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await logoFile.CopyToAsync(fileStream);
+                }
+
+                company.LogoPath = $"/uploads/logos/{uniqueFileName}";
+            }
+
             company.CompanyName = vm.CompanyName;
             company.Industry = vm.Industry;
-            company.LogoPath = vm.LogoPath;
 
             company.OperatingCities.Clear();
 
-            foreach (var cityId in vm.SelectedCityIds)
+            if (vm.SelectedCityIds != null)
             {
-                company.OperatingCities.Add(new CompanyProfile_City
+                foreach (var cityId in vm.SelectedCityIds)
                 {
-                    CompanyProfileId = company.Id,
-                    CityId = cityId
-                });
+                    company.OperatingCities.Add(new CompanyProfile_City
+                    {
+                        CompanyProfileId = company.Id,
+                        CityId = cityId
+                    });
+                }
             }
 
             await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Profile updated successfully.";
 
             return RedirectToAction(nameof(Edit));
         }

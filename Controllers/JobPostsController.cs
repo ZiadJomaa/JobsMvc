@@ -330,7 +330,6 @@ namespace JobsMvc.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            // التأكد من وجود بروفايل للباحث وإنشاؤه تلقائياً لمنع إيرور الـ Foreign Key
             var jobSeekerProfile = await _context.JobSeekerProfiles
                 .FirstOrDefaultAsync(s => s.Id == userId);
 
@@ -430,12 +429,46 @@ namespace JobsMvc.Controllers
             return RedirectToAction(nameof(ViewApplications), new { id = application.JobPostId });
         }
 
+        [Authorize(Roles = "Company")]
+        public async Task<IActionResult> CompanyDashboard()
+        {
+            var companyId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            if (companyId == null)
+                return Unauthorized();
 
+            // جلب التطبيقات مع ربط الـ JobSeeker مباشرة بطريقة آمنة
+            var applications = await _context.JobApplications
+                .Include(a => a.JobPost)
+                .Include(a => a.JobSeeker)
+                .Where(a => a.JobPost.CompanyId == companyId)
+                .OrderByDescending(a => a.AppliedAt)
+                .ToListAsync();
 
+            return View(applications);
+        }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Company")]
+        public async Task<IActionResult> UpdateDashboardStatus(int id, ApplicationStatus status)
+        {
+            var application = await _context.JobApplications
+                .Include(a => a.JobPost)
+                .FirstOrDefaultAsync(a => a.Id == id);
 
+            if (application == null)
+                return NotFound();
 
+            var companyId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (application.JobPost.CompanyId != companyId)
+                return Forbid();
 
+            application.Status = status;
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Status updated successfully!";
+            return RedirectToAction(nameof(CompanyDashboard));
+        }
     }
 }

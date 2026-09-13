@@ -45,6 +45,13 @@
                 <div class="navbar-nav ms-auto p-4 p-lg-0">
                     <a asp-controller="Home" asp-action="Index" class="nav-item nav-link active">Home</a>
                     <a asp-controller="JobPosts" asp-action="Index" class="nav-item nav-link">Jobs</a>
+                    
+                    <!-- Dashboard Link for Company Role Only -->
+                    @if (User.IsInRole("Company"))
+                    {
+                        <a asp-controller="JobPosts" asp-action="CompanyDashboard" class="nav-item nav-link">Dashboard</a>
+                    }
+
                     <a href="#" class="nav-item nav-link">About</a>
                     <a href="#" class="nav-item nav-link">Contact</a>
                 </div>
@@ -97,7 +104,7 @@
                 <div class="copyright">
                     <div class="row">
                         <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                            &copy; <a class="border-bottom" href="#">JobEntry</a>, All Rights Reserved.
+                            &copy; <a class="border-button" href="#">JobEntry</a>, All Rights Reserved.
                         </div>
                     </div>
                 </div>

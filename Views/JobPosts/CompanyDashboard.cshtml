@@ -1,0 +1,63 @@
+﻿@model IEnumerable<JobsMvc.Models.Entities.JobApplication>
+
+@{
+    ViewData["Title"] = "Company Dashboard";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Company Dashboard - Applicant Management</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Job Title</th>
+                <th>Applicant Name</th>
+                <th>Applied Date</th>
+                <th>Current Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.JobPost?.Title</td>
+                        <td>@(item.JobSeeker?.FullName ?? "Unknown Applicant")</td>
+                        <td>@item.AppliedAt.ToShortDateString()</td>
+                        <td>
+                            <span class="badge bg-info text-dark">@item.Status</span>
+                        </td>
+                        <td>
+                            <form asp-action="UpdateDashboardStatus" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input type="hidden" name="status" value="@JobsMvc.Models.Enums.ApplicationStatus.Accepted" />
+                                <button type="submit" class="btn btn-sm btn-success">Accept</button>
+                            </form>
+
+                            <form asp-action="UpdateDashboardStatus" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input type="hidden" name="status" value="1" />
+                                <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center">No applicants found yet.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -3,25 +3,31 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
-<ul class="navbar-nav">
+<div class="navbar-nav ms-auto p-4 p-lg-0 align-items-center">
 @if (SignInManager.IsSignedIn(User))
 {
-    <li class="nav-item">
-        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
-    </li>
-    <li class="nav-item">
-        <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-        </form>
-    </li>
+    @if (User.IsInRole("JobSeeker"))
+    {
+        <a class="nav-item nav-link" asp-controller="JobSeeker" asp-action="EditProfile">Profile</a>
+    }
+    else if (User.IsInRole("Company"))
+    {
+        <a class="nav-item nav-link" asp-controller="Company" asp-action="Profile">Company Profile</a>
+    }
+    else if (User.IsInRole("Admin"))
+    {
+        <a class="nav-item nav-link text-danger" asp-controller="Admin" asp-action="Index">Admin Panel</a>
+    }
+
+    <form class="d-inline" asp-controller="Account" asp-action="Logout" method="post">
+        <button type="submit" class="nav-item nav-link btn btn-link text-uppercase text-secondary border-0" style="text-decoration:none;">
+            Logout (@User.Identity?.Name?.Split('@')[0])
+        </button>
+    </form>
 }
 else
 {
-    <li class="nav-item">
-      <a class="nav-link text-dark" asp-controller="Home" asp-action="Register">Register</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
-    </li>
+    <a class="nav-item nav-link" asp-controller="Account" asp-action="Register">REGISTER</a>
+    <a class="nav-item nav-link" asp-controller="Account" asp-action="Login">LOGIN</a>
 }
-</ul>
+</div>

@@ -1,0 +1,137 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Areas/Admin/Views/Shared/AdminLayout.cshtml";
+}
+
+<div class="dashboard-intro">
+    <div>
+        <h2>Welcome to your dashboard</h2>
+        <p>Here’s an overview of what’s happening on your job portal.</p>
+    </div>
+
+    <a asp-area="Admin"
+       asp-controller="Admin"
+       asp-action="Companies"
+       class="btn admin-primary-btn">
+        Manage Companies
+        <span aria-hidden="true">→</span>
+    </a>
+</div>
+
+<div class="row g-4 dashboard-stats">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card stat-users">
+            <div class="stat-card-top">
+                <span class="stat-label">Total Users</span>
+                <span class="stat-icon">♙</span>
+            </div>
+            <div class="stat-number">@(ViewBag.UsersCount ?? 0)</div>
+            <div class="stat-caption">Registered accounts</div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card stat-companies">
+            <div class="stat-card-top">
+                <span class="stat-label">Companies</span>
+                <span class="stat-icon">▦</span>
+            </div>
+            <div class="stat-number">@(ViewBag.CompaniesCount ?? 0)</div>
+            <div class="stat-caption">Company profiles</div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card stat-jobs">
+            <div class="stat-card-top">
+                <span class="stat-label">Job Posts</span>
+                <span class="stat-icon">▤</span>
+            </div>
+            <div class="stat-number">@(ViewBag.JobsCount ?? 0)</div>
+            <div class="stat-caption">Published opportunities</div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card stat-applications">
+            <div class="stat-card-top">
+                <span class="stat-label">Applications</span>
+                <span class="stat-icon">✓</span>
+            </div>
+            <div class="stat-number">@(ViewBag.ApplicationsCount ?? 0)</div>
+            <div class="stat-caption">Submitted applications</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-12 col-xl-7">
+        <section class="admin-panel h-100">
+            <div class="panel-heading">
+                <div>
+                    <h3>Quick Actions</h3>
+                    <p>Manage the main parts of your job portal.</p>
+                </div>
+            </div>
+
+            <a class="quick-action"
+               asp-area="Admin"
+               asp-controller="Admin"
+               asp-action="Companies">
+                <span class="quick-action-icon">▦</span>
+                <span class="quick-action-text">
+                    <strong>Manage Companies</strong>
+                    <small>Review company profiles and approval status.</small>
+                </span>
+                <span class="quick-action-arrow">→</span>
+            </a>
+
+            <a class="quick-action"
+               asp-area=""
+               asp-controller="JobPosts"
+               asp-action="Index">
+                <span class="quick-action-icon jobs-action-icon">▤</span>
+                <span class="quick-action-text">
+                    <strong>Browse Job Posts</strong>
+                    <small>View the job listings on the website.</small>
+                </span>
+                <span class="quick-action-arrow">→</span>
+            </a>
+        </section>
+    </div>
+
+    <div class="col-12 col-xl-5">
+        <section class="admin-panel h-100">
+            <div class="panel-heading">
+                <div>
+                    <h3>Admin Workspace</h3>
+                    <p>Keep track of the portal’s key areas.</p>
+                </div>
+            </div>
+
+            <div class="workspace-item">
+                <span class="workspace-check">✓</span>
+                <span>
+                    <strong>Company approvals</strong>
+                    <small>Review pending company profiles.</small>
+                </span>
+            </div>
+
+            <div class="workspace-item">
+                <span class="workspace-check">✓</span>
+                <span>
+                    <strong>Job listings</strong>
+                    <small>Access published job opportunities.</small>
+                </span>
+            </div>
+
+            <div class="workspace-item">
+                <span class="workspace-check">✓</span>
+                <span>
+                    <strong>Website overview</strong>
+                    <small>View the main portal statistics.</small>
+                </span>
+            </div>
+        </section>
+    </div>
+</div>

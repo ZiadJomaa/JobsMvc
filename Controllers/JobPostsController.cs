@@ -1,7 +1,7 @@
 ﻿using JobsMvc.Data;
 using JobsMvc.Models.Entities;
 using JobsMvc.Models.Enums;
-using JobsMvc.ViewModel;
+using JobsMvc.ViewModels.JobPost;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;

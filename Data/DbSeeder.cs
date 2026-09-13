@@ -25,7 +25,44 @@ public static class DbSeeder
             }
         }
 
-       
+
+        // Create demo Admin account
+        var adminEmail = "admin@test.com";
+        var adminPassword = "Admin@123";
+
+        var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+        if (adminUser == null)
+        {
+            adminUser = new ApplicationUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailConfirmed = true,
+                UserType = UserType.Admin
+            };
+
+            var result = await userManager.CreateAsync(adminUser, adminPassword);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"Could not create Admin user: {errors}");
+            }
+        }
+
+        // Ensure the user has the Admin role
+        if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+        {
+            var roleResult = await userManager.AddToRoleAsync(adminUser, "Admin");
+
+            if (!roleResult.Succeeded)
+            {
+                var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+                throw new Exception($"Could not add Admin role: {errors}");
+            }
+        }
+
 
         if (!context.Cities.Any())
         {

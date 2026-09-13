@@ -3,7 +3,7 @@ using JobsMvc.Models.Enums;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
-namespace JobsMvc.ViewModel
+namespace JobsMvc.ViewModels.JobPost
 {
     public class JobPostFormViewModel
     {

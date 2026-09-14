@@ -1,137 +1,75 @@
 ﻿@{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Dashboard Overview";
     Layout = "~/Areas/Admin/Views/Shared/AdminLayout.cshtml";
 }
 
-<div class="dashboard-intro">
-    <div>
-        <h2>Welcome to your dashboard</h2>
-        <p>Here’s an overview of what’s happening on your job portal.</p>
-    </div>
-
-    <a asp-area="Admin"
-       asp-controller="Admin"
-       asp-action="Companies"
-       class="btn admin-primary-btn">
-        Manage Companies
-        <span aria-hidden="true">→</span>
-    </a>
-</div>
-
-<div class="row g-4 dashboard-stats">
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card stat-users">
-            <div class="stat-card-top">
-                <span class="stat-label">Total Users</span>
-                <span class="stat-icon">♙</span>
-            </div>
-            <div class="stat-number">@(ViewBag.UsersCount ?? 0)</div>
-            <div class="stat-caption">Registered accounts</div>
-        </div>
-    </div>
-
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card stat-companies">
-            <div class="stat-card-top">
-                <span class="stat-label">Companies</span>
-                <span class="stat-icon">▦</span>
-            </div>
-            <div class="stat-number">@(ViewBag.CompaniesCount ?? 0)</div>
-            <div class="stat-caption">Company profiles</div>
-        </div>
-    </div>
-
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card stat-jobs">
-            <div class="stat-card-top">
-                <span class="stat-label">Job Posts</span>
-                <span class="stat-icon">▤</span>
-            </div>
-            <div class="stat-number">@(ViewBag.JobsCount ?? 0)</div>
-            <div class="stat-caption">Published opportunities</div>
-        </div>
-    </div>
-
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card stat-applications">
-            <div class="stat-card-top">
-                <span class="stat-label">Applications</span>
-                <span class="stat-icon">✓</span>
-            </div>
-            <div class="stat-number">@(ViewBag.ApplicationsCount ?? 0)</div>
-            <div class="stat-caption">Submitted applications</div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4 mt-1">
-    <div class="col-12 col-xl-7">
-        <section class="admin-panel h-100">
-            <div class="panel-heading">
+<!-- Summary Statistics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-white p-3">
+            <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <h3>Quick Actions</h3>
-                    <p>Manage the main parts of your job portal.</p>
+                    <span class="text-muted small fw-semibold d-block">TOTAL JOBS</span>
+                    <h3 class="fw-bold mb-0 text-dark mt-1">@(ViewBag.TotalJobs ?? 0)</h3>
+                </div>
+                <div class="badge bg-primary-subtle text-primary p-3 rounded-circle fs-4">
+                    💼
                 </div>
             </div>
-
-            <a class="quick-action"
-               asp-area="Admin"
-               asp-controller="Admin"
-               asp-action="Companies">
-                <span class="quick-action-icon">▦</span>
-                <span class="quick-action-text">
-                    <strong>Manage Companies</strong>
-                    <small>Review company profiles and approval status.</small>
-                </span>
-                <span class="quick-action-arrow">→</span>
-            </a>
-
-            <a class="quick-action"
-               asp-area=""
-               asp-controller="JobPosts"
-               asp-action="Index">
-                <span class="quick-action-icon jobs-action-icon">▤</span>
-                <span class="quick-action-text">
-                    <strong>Browse Job Posts</strong>
-                    <small>View the job listings on the website.</small>
-                </span>
-                <span class="quick-action-arrow">→</span>
-            </a>
-        </section>
+        </div>
     </div>
 
-    <div class="col-12 col-xl-5">
-        <section class="admin-panel h-100">
-            <div class="panel-heading">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-white p-3">
+            <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <h3>Admin Workspace</h3>
-                    <p>Keep track of the portal’s key areas.</p>
+                    <span class="text-muted small fw-semibold d-block">PENDING APPROVAL</span>
+                    <h3 class="fw-bold mb-0 text-warning mt-1">@(ViewBag.PendingJobs ?? 0)</h3>
+                </div>
+                <div class="badge bg-warning-subtle text-warning p-3 rounded-circle fs-4">
+                    ⏳
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="workspace-item">
-                <span class="workspace-check">✓</span>
-                <span>
-                    <strong>Company approvals</strong>
-                    <small>Review pending company profiles.</small>
-                </span>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-white p-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold d-block">CATEGORIES</span>
+                    <h3 class="fw-bold mb-0 text-dark mt-1">@(ViewBag.TotalCategories ?? 0)</h3>
+                </div>
+                <div class="badge bg-info-subtle text-info p-3 rounded-circle fs-4">
+                    📂
+                </div>
             </div>
+        </div>
+    </div>
 
-            <div class="workspace-item">
-                <span class="workspace-check">✓</span>
-                <span>
-                    <strong>Job listings</strong>
-                    <small>Access published job opportunities.</small>
-                </span>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-white p-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold d-block">TOTAL USERS</span>
+                    <h3 class="fw-bold mb-0 text-dark mt-1">@(ViewBag.TotalUsers ?? 0)</h3>
+                </div>
+                <div class="badge bg-success-subtle text-success p-3 rounded-circle fs-4">
+                    👥
+                </div>
             </div>
+        </div>
+    </div>
+</div>
 
-            <div class="workspace-item">
-                <span class="workspace-check">✓</span>
-                <span>
-                    <strong>Website overview</strong>
-                    <small>View the main portal statistics.</small>
-                </span>
-            </div>
-        </section>
+<div class="card border-0 shadow-sm rounded-3 bg-light p-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="fw-bold mb-1">System Status</h5>
+            <p class="text-muted small mb-0">All management modules are up to date and active.</p>
+        </div>
+        <a asp-controller="Jobs" asp-action="Index" class="btn btn-primary px-3">
+            Review Jobs Pending Approval
+        </a>
     </div>
 </div>

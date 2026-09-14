@@ -46,6 +46,43 @@
                     Manage Companies
                 </a>
 
+                <a class="nav-link @(currentController == "Categories" ? "active" : "")"
+                   asp-area="Admin"
+                   asp-controller="Categories"
+                   asp-action="Index">
+                    <span class="nav-icon">▤</span>
+                    Manage Categories
+                </a>
+                <a class="nav-link @(currentController == "Cities" ? "active" : "")"
+                   asp-area="Admin"
+                   asp-controller="Cities"
+                   asp-action="Index">
+                    <span class="nav-icon">🏙</span>
+                    Manage Cities
+                </a>
+
+                <a class="nav-link @(currentController == "Skills" ? "active" : "")"
+                   asp-area="Admin"
+                   asp-controller="Skills"
+                   asp-action="Index">
+                    <span class="nav-icon">💡</span>
+                    Manage Skills
+                </a>
+
+                <a class="nav-link @(currentController == "Jobs" ? "active" : "")"
+                   asp-area="Admin"
+                   asp-controller="Jobs"
+                   asp-action="Index">
+                    <span class="nav-icon">💼</span>
+                    Manage Jobs
+                </a>
+                <a class="nav-link @(currentController == "Users" ? "active" : "")"
+                   asp-area="Admin"
+                   asp-controller="Users"
+                   asp-action="Index">
+                    <span class="nav-icon">👥</span>
+                    Manage Users
+                </a>
                 <a class="nav-link @(currentAction == "Admins" || currentAction == "CreateAdmin" ? "active" : "")"
                    asp-area="Admin"
                    asp-controller="Admin"
@@ -60,13 +97,6 @@
                    asp-action="MyProfile">
                     <span class="nav-icon">◉</span>
                     My Profile
-                </a>
-                <a class="nav-link"
-                   asp-area=""
-                   asp-controller="JobPosts"
-                   asp-action="Index">
-                    <span class="nav-icon">▤</span>
-                    Jobs
                 </a>
 
                 <div class="sidebar-divider"></div>

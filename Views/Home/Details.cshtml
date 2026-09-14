@@ -1,0 +1,36 @@
+﻿@model JobsMvc.Models.Entities.JobPost
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container py-4">
+    <a asp-action="Index" class="btn btn-link text-decoration-none mb-3 p-0">← Back to Jobs</a>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-3 p-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge bg-primary-subtle text-primary border border-primary fs-6">@(Model.Category?.Name ?? "General")</span>
+                    <span class="badge bg-light text-dark border fs-6">📍 @(Model.City?.Name ?? "Remote")</span>
+                </div>
+                
+                <h2 class="fw-bold mb-3">@Model.Title</h2>
+                
+                <hr class="my-4" />
+                
+                <h5 class="fw-bold mb-3">Job Description</h5>
+                <p class="text-secondary lh-lg" style="white-space: pre-line;">@Model.Description</p>
+            </div>
+        </div>
+    </div>
+</div>

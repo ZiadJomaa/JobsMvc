@@ -29,10 +29,10 @@ namespace JobsMvc.Areas.Admin.Controllers
 
         public async Task<IActionResult> Dashboard()
         {
-            ViewBag.UsersCount = await _context.Users.CountAsync();
-            ViewBag.CompaniesCount = await _context.CompanyProfiles.CountAsync();
-            ViewBag.JobsCount = await _context.JobPosts.CountAsync();
-            ViewBag.ApplicationsCount = await _context.JobApplications.CountAsync();
+            ViewBag.TotalJobs = await _context.JobPosts.CountAsync();
+            ViewBag.PendingJobs = await _context.JobPosts.CountAsync(j => !j.IsApproved);
+            ViewBag.TotalCategories = await _context.Categories.CountAsync();
+            ViewBag.TotalUsers = await _context.Users.CountAsync();
 
             return View();
         }

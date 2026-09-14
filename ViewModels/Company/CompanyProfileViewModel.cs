@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
-namespace JobsMvc.ViewModels;
+namespace JobsMvc.ViewModels.Company;
 
 public class CompanyProfileViewModel
 {

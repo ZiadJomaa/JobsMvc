@@ -83,7 +83,7 @@ public class AccountController : Controller
                 if (model.UserType == UserType.JobSeeker)
                     return RedirectToAction("EditProfile", "JobSeeker");
 
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("CompanyDashboard", "JobPosts");
             }
             catch
             {
@@ -129,31 +129,37 @@ public class AccountController : Controller
         }
 
         var result = await _signInManager.PasswordSignInAsync(
-            user.UserName!, 
-            model.Password, 
-            model.RememberMe, 
+            user.UserName!,
+            model.Password,
+            model.RememberMe,
             lockoutOnFailure: false);
 
         if (result.Succeeded)
         {
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                return Redirect(returnUrl);
-
-            if (await _userManager.IsInRoleAsync(user, "Admin"))
-                return RedirectToAction("Index", "Admin");
-
-            if (user.UserType == UserType.JobSeeker)
-                return RedirectToAction("EditProfile", "JobSeeker");
-
-            if (user.UserType == UserType.Company)
+            // التحقق المباشر من دور الشركة وتوجيهها للداش بورد فوراً متخطية أي إرجاع قديم
+            if (await _userManager.IsInRoleAsync(user, "Company"))
             {
                 var company = await _context.CompanyProfiles.FindAsync(user.Id);
                 if (company != null && !company.IsApproved)
                 {
                     TempData["WarningMessage"] = "Your company account is currently pending administrator approval.";
                 }
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("CompanyDashboard", "JobPosts");
             }
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
+
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                return RedirectToAction(
+                    "Dashboard",
+                    "Admin",
+                    new { area = "Admin" });
+            }
+
+            if (user.UserType == UserType.JobSeeker)
+                return RedirectToAction("EditProfile", "JobSeeker");
 
             return RedirectToAction("Index", "Home");
         }

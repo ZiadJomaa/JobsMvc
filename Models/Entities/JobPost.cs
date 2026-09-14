@@ -12,6 +12,7 @@ public class JobPost
     public decimal? MinSalary { get; set; }
     public decimal? MaxSalary { get; set; }
     public DateTime? ClosingDate { get; set; }
+    public bool IsApproved { get; set; } = false;
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

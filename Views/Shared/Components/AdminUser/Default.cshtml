@@ -1,0 +1,21 @@
+﻿@model JobsMvc.Models.Entities.ApplicationUser
+
+<div class="admin-user">
+    @if (!string.IsNullOrEmpty(Model?.ProfileImagePath))
+    {
+        <img class="admin-avatar"
+             src="@Model.ProfileImagePath"
+             alt="Admin profile picture" />
+    }
+    else
+    {
+        <div class="admin-avatar">
+            @(Model?.FullName?.FirstOrDefault().ToString() ?? "A")
+        </div>
+    }
+
+    <div class="admin-user-info">
+        <strong>@(Model?.FullName ?? "Administrator")</strong>
+        <span>@(Model?.Email ?? User.Identity?.Name ?? "Admin")</span>
+    </div>
+</div>

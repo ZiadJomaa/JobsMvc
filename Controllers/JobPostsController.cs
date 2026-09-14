@@ -1,7 +1,7 @@
 ﻿using JobsMvc.Data;
 using JobsMvc.Models.Entities;
 using JobsMvc.Models.Enums;
-using JobsMvc.ViewModel;
+using JobsMvc.ViewModels.JobPost;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -19,13 +19,23 @@ namespace JobsMvc.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index(string searchTitle, int? cityId, int? categoryId)
+        public async Task<IActionResult> Index(
+            string searchTitle,
+            int? cityId,
+            int? categoryId,
+            JobType? jobType,
+            ExperienceLevel? experienceLevel,
+            decimal? minSalary,
+            decimal? maxSalary ,
+            string sortOrder,
+             int page = 1)
         {
             var query = _context.JobPosts
-                .Include(j => j.Company)
-                .Include(j => j.City)
-                .Include(j => j.Category)
-                .AsQueryable();
+     .Include(j => j.Company)
+     .Include(j => j.City)
+     .Include(j => j.Category)
+     .Where(j => !j.ClosingDate.HasValue || j.ClosingDate.Value >= DateTime.UtcNow)
+     .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTitle))
             {
@@ -41,10 +51,54 @@ namespace JobsMvc.Controllers
             {
                 query = query.Where(j => j.CategoryId == categoryId.Value);
             }
+            if (jobType.HasValue)
+            {
+                query = query.Where(j => j.JobType == jobType.Value);
+            }
+            if (experienceLevel.HasValue)
+            {
+                query = query.Where(j => j.ExperienceLevel == experienceLevel.Value);
+            }
+            if (minSalary.HasValue)
+            {
+                query = query.Where(j => j.MinSalary >= minSalary.Value);
+            }
+
+            if (maxSalary.HasValue)
+            {
+                query = query.Where(j => j.MaxSalary <= maxSalary.Value);
+            }
+
+            switch (sortOrder)
+            {
+                case "oldest":
+                    query = query.OrderBy(j => j.CreatedAt);
+                    break;
+
+                case "salaryHigh":
+                    query = query.OrderByDescending(j => j.MaxSalary);
+                    break;
+
+                case "salaryLow":
+                    query = query.OrderBy(j => j.MinSalary);
+                    break;
+
+                default:
+                    query = query.OrderByDescending(j => j.CreatedAt);
+                    break;
+            }
+            int pageSize = 6;
+
+            var totalJobs = await query.CountAsync();
 
             var jobPosts = await query
-                .OrderByDescending(j => j.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalJobs / pageSize);
+            ViewBag.SortOrder = sortOrder;
 
             ViewBag.Cities = new SelectList(await _context.Cities.OrderBy(c => c.Name).ToListAsync(), "Id", "Name", cityId);
             ViewBag.Categories = new SelectList(await _context.Categories.OrderBy(c => c.Name).ToListAsync(), "Id", "Name", categoryId);
@@ -330,7 +384,6 @@ namespace JobsMvc.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            // التأكد من وجود بروفايل للباحث وإنشاؤه تلقائياً لمنع إيرور الـ Foreign Key
             var jobSeekerProfile = await _context.JobSeekerProfiles
                 .FirstOrDefaultAsync(s => s.Id == userId);
 
@@ -430,12 +483,46 @@ namespace JobsMvc.Controllers
             return RedirectToAction(nameof(ViewApplications), new { id = application.JobPostId });
         }
 
+        [Authorize(Roles = "Company")]
+        public async Task<IActionResult> CompanyDashboard()
+        {
+            var companyId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            if (companyId == null)
+                return Unauthorized();
 
+            // جلب التطبيقات مع ربط الـ JobSeeker مباشرة بطريقة آمنة
+            var applications = await _context.JobApplications
+                .Include(a => a.JobPost)
+                .Include(a => a.JobSeeker)
+                .Where(a => a.JobPost.CompanyId == companyId)
+                .OrderByDescending(a => a.AppliedAt)
+                .ToListAsync();
 
+            return View(applications);
+        }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Company")]
+        public async Task<IActionResult> UpdateDashboardStatus(int id, ApplicationStatus status)
+        {
+            var application = await _context.JobApplications
+                .Include(a => a.JobPost)
+                .FirstOrDefaultAsync(a => a.Id == id);
 
+            if (application == null)
+                return NotFound();
 
+            var companyId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (application.JobPost.CompanyId != companyId)
+                return Forbid();
 
+            application.Status = status;
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Status updated successfully!";
+            return RedirectToAction(nameof(CompanyDashboard));
+        }
     }
 }

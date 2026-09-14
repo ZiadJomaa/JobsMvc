@@ -1,6 +1,6 @@
 ﻿using JobsMvc.Data;
 using JobsMvc.Models.Entities;
-using JobsMvc.ViewModel;
+using JobsMvc.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

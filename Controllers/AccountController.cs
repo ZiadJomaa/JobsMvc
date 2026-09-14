@@ -151,7 +151,12 @@ public class AccountController : Controller
                 return Redirect(returnUrl);
 
             if (await _userManager.IsInRoleAsync(user, "Admin"))
-                return RedirectToAction("Index", "Admin");
+            {
+                return RedirectToAction(
+                    "Dashboard",
+                    "Admin",
+                    new { area = "Admin" });
+            }
 
             if (user.UserType == UserType.JobSeeker)
                 return RedirectToAction("EditProfile", "JobSeeker");

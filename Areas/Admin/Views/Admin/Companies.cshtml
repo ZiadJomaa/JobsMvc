@@ -1,0 +1,199 @@
+﻿@model IEnumerable<JobsMvc.Models.Entities.CompanyProfile>
+
+@{
+    ViewData["Title"] = "Manage Companies";
+    Layout = "~/Areas/Admin/Views/Shared/AdminLayout.cshtml";
+
+    var showPendingOnly = ViewData["ShowPendingOnly"] is bool value && value;
+    var companies = Model?.ToList() ?? new List<JobsMvc.Models.Entities.CompanyProfile>();
+    var pendingCount = companies.Count(company => !company.IsApproved);
+    var approvedCount = companies.Count(company => company.IsApproved);
+}
+
+<div class="companies-intro">
+    <div>
+        <h2>Company Management</h2>
+        <p>Review company profiles and manage their approval status.</p>
+    </div>
+
+    @if (showPendingOnly)
+    {
+        <a asp-area="Admin"
+           asp-controller="Admin"
+           asp-action="Companies"
+           asp-route-showPendingOnly="false"
+           class="btn admin-outline-btn">
+            Show All Companies
+        </a>
+    }
+    else
+    {
+        <a asp-area="Admin"
+           asp-controller="Admin"
+           asp-action="Companies"
+           asp-route-showPendingOnly="true"
+           class="btn admin-outline-btn">
+            Show Pending Only
+        </a>
+    }
+</div>
+
+<div class="company-summary row g-3">
+    <div class="col-12 col-sm-6 col-lg-4">
+        <div class="summary-card">
+            <span class="summary-indicator pending-indicator"></span>
+            <div>
+                <span class="summary-label">Pending in this list</span>
+                <strong>@pendingCount</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+        <div class="summary-card">
+            <span class="summary-indicator approved-indicator"></span>
+            <div>
+                <span class="summary-label">Approved in this list</span>
+                <strong>@approvedCount</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+        <div class="summary-card">
+            <span class="summary-indicator total-indicator"></span>
+            <div>
+                <span class="summary-label">Companies shown</span>
+                <strong>@companies.Count</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="admin-panel companies-panel">
+    <div class="panel-heading companies-panel-heading">
+        <div>
+            <h3>@(showPendingOnly ? "Pending Companies" : "All Companies")</h3>
+            <p>
+                @(showPendingOnly
+                    ? "These companies are waiting for approval."
+                    : "All company profiles currently available.")
+            </p>
+        </div>
+
+        <span class="count-badge">@companies.Count companies</span>
+    </div>
+
+    @if (!companies.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">▦</div>
+            <h4>@(showPendingOnly ? "No pending companies" : "No companies found")</h4>
+            <p>
+                @(showPendingOnly
+                    ? "There are no company profiles waiting for approval right now."
+                    : "Company profiles will appear here when they become available.")
+            </p>
+
+            @if (showPendingOnly)
+            {
+                <a asp-area="Admin"
+                   asp-controller="Admin"
+                   asp-action="Companies"
+                   asp-route-showPendingOnly="false"
+                   class="btn admin-outline-btn">
+                    View All Companies
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table companies-table align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col">Company</th>
+                        <th scope="col">Industry</th>
+                        <th scope="col">Approval Status</th>
+                        <th scope="col" class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var company in companies)
+                    {
+                        <tr>
+                            <td>
+                                <div class="company-name-cell">
+                                    <span class="company-avatar">
+                                        @(string.IsNullOrWhiteSpace(company.CompanyName)
+                                            ? "C"
+                                            : company.CompanyName.Trim().Substring(0, 1).ToUpper())
+                                    </span>
+                                    <strong>@company.CompanyName</strong>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="industry-text">
+                                    @(string.IsNullOrWhiteSpace(company.Industry)
+                                        ? "Not specified"
+                                        : company.Industry)
+                                </span>
+                            </td>
+
+                            <td>
+                                @if (company.IsApproved)
+                                {
+                                    <span class="status-badge status-approved">
+                                        <span></span> Approved
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-pending">
+                                        <span></span> Pending
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="text-end">
+                                @if (!company.IsApproved)
+                                {
+                                    <form asp-area="Admin"
+                                          asp-controller="Admin"
+                                          asp-action="Approve"
+                                          asp-route-id="@company.Id"
+                                          asp-route-showPendingOnly="@showPendingOnly"
+                                          method="post"
+                                          class="company-action-form">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm approve-btn">
+                                            Approve
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-area="Admin"
+                                          asp-controller="Admin"
+                                          asp-action="Reject"
+                                          asp-route-id="@company.Id"
+                                          asp-route-showPendingOnly="@showPendingOnly"
+                                          method="post"
+                                          class="company-action-form"
+                                          onsubmit="return confirm('Revoke approval for this company?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm revoke-btn">
+                                            Revoke Approval
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

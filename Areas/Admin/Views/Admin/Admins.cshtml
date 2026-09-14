@@ -1,0 +1,60 @@
+﻿@model IEnumerable<JobsMvc.Models.Entities.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Manage Admins";
+    Layout = "~/Areas/Admin/Views/Shared/AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h2 class="h3 mb-1">Manage Admins</h2>
+            <p class="text-muted mb-0">View administrator accounts and add new admins.</p>
+        </div>
+
+        <a asp-area="Admin"
+           asp-controller="Admin"
+           asp-action="CreateAdmin"
+           class="btn btn-primary">
+            + Add New Admin
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <p class="text-muted mb-0">No admin accounts found.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Account Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var admin in Model)
+                            {
+                                <tr>
+                                    <td>@(admin.FullName ?? "—")</td>
+                                    <td>@admin.Email</td>
+                                    <td>@admin.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,138 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - JobsMvc Admin</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/admin/css/admin.css" />
+</head>
+<body>
+    @{
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    }
+
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <a class="admin-brand"
+               asp-area="Admin"
+               asp-controller="Admin"
+               asp-action="Dashboard">
+                <span class="brand-mark">J</span>
+                <span>
+                    <strong>JobsMvc</strong>
+                    <small>Admin Panel</small>
+                </span>
+            </a>
+
+            <div class="sidebar-label">MAIN MENU</div>
+
+            <nav class="nav flex-column admin-nav">
+                <a class="nav-link @(currentAction == "Dashboard" ? "active" : "")"
+                   asp-area="Admin"
+                   asp-controller="Admin"
+                   asp-action="Dashboard">
+                    <span class="nav-icon">⌂</span>
+                    Dashboard
+                </a>
+
+                <a class="nav-link @(currentAction == "Companies" ? "active" : "")"
+                   asp-area="Admin"
+                   asp-controller="Admin"
+                   asp-action="Companies">
+                    <span class="nav-icon">▦</span>
+                    Manage Companies
+                </a>
+
+                <a class="nav-link @(currentController == "Categories" ? "active" : "")"
+                   asp-area="Admin"
+                   asp-controller="Categories"
+                   asp-action="Index">
+                    <span class="nav-icon">▤</span>
+                    Manage Categories
+                </a>
+                <a class="nav-link @(currentController == "Cities" ? "active" : "")"
+                   asp-area="Admin"
+                   asp-controller="Cities"
+                   asp-action="Index">
+                    <span class="nav-icon">🏙</span>
+                    Manage Cities
+                </a>
+
+                <a class="nav-link @(currentController == "Skills" ? "active" : "")"
+                   asp-area="Admin"
+                   asp-controller="Skills"
+                   asp-action="Index">
+                    <span class="nav-icon">💡</span>
+                    Manage Skills
+                </a>
+
+                <a class="nav-link @(currentController == "Jobs" ? "active" : "")"
+                   asp-area="Admin"
+                   asp-controller="Jobs"
+                   asp-action="Index">
+                    <span class="nav-icon">💼</span>
+                    Manage Jobs
+                </a>
+                <a class="nav-link @(currentController == "Users" ? "active" : "")"
+                   asp-area="Admin"
+                   asp-controller="Users"
+                   asp-action="Index">
+                    <span class="nav-icon">👥</span>
+                    Manage Users
+                </a>
+                <a class="nav-link @(currentAction == "Admins" || currentAction == "CreateAdmin" ? "active" : "")"
+                   asp-area="Admin"
+                   asp-controller="Admin"
+                   asp-action="Admins">
+                    <span class="nav-icon">♙</span>
+                    Manage Admins
+                </a>
+
+                <a class="nav-link @(currentAction == "MyProfile" ? "active" : "")"
+                   asp-area="Admin"
+                   asp-controller="Admin"
+                   asp-action="MyProfile">
+                    <span class="nav-icon">◉</span>
+                    My Profile
+                </a>
+
+                <div class="sidebar-divider"></div>
+
+                <a class="nav-link"
+                   asp-area=""
+                   asp-controller="Home"
+                   asp-action="Index">
+                    <span class="nav-icon">↗</span>
+                    Back to Website
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <span class="footer-dot"></span>
+                Admin workspace
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-topbar">
+                <div>
+                    <div class="topbar-eyebrow">ADMINISTRATION</div>
+                    <h1 class="topbar-title">@ViewData["Title"]</h1>
+                </div>
+
+                @await Component.InvokeAsync("AdminUser")
+            </header>
+
+            <div class="admin-content">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,103 @@
+﻿@using Microsoft.AspNetCore.Identity
+@model IEnumerable<IdentityUser>
+
+@{
+    ViewData["Title"] = "Users Management";
+    Layout = "~/Areas/Admin/Views/Shared/AdminLayout.cshtml";
+}
+
+<div class="card border-0 shadow-sm rounded-3">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">Users Management</h4>
+                <p class="text-muted small mb-0">View registered users and manage their access status</p>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th>User Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th class="text-end" style="width: 220px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        int count = 1;
+                        foreach (var user in Model)
+                        {
+                            bool isBlocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
+                            <tr>
+                                <td class="fw-bold text-secondary">@(count++)</td>
+                                <td>
+                                    <span class="fw-semibold text-dark">@user.Email</span>
+                                </td>
+                                <td>
+                                    @{
+                                        var rolesMap = ViewBag.UserRoles as Dictionary<string, IList<string>>;
+                                        var roles = rolesMap != null && rolesMap.ContainsKey(user.Id) ? rolesMap[user.Id] : new List<string>();
+                                    }
+                                    @if (roles.Any())
+                                    {
+                                        @foreach (var role in roles)
+                                        {
+                                            <span class="badge bg-primary-subtle text-primary border border-primary me-1">@role</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-muted border">User</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (isBlocked)
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger">Blocked</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success">Active</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-1">
+                                        <!-- Block / Unblock Form -->
+                                        <form asp-action="ToggleBlock" asp-route-id="@user.Id" method="post" class="d-inline">
+                                            @if (isBlocked)
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-outline-success">Unblock</button>
+                                            }
+                                            else
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-outline-warning">Block</button>
+                                            }
+                                        </form>
+
+                                        <!-- Delete Form -->
+                                        <form asp-action="Delete" asp-route-id="@user.Id" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                No registered users found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

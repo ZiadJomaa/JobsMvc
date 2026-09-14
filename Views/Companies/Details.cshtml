@@ -1,0 +1,42 @@
+﻿@model JobsMvc.Models.Entities.CompanyProfile
+
+@{
+    ViewData["Title"] = Model.CompanyName;
+    var openJobs = ViewBag.OpenJobs as IEnumerable<JobsMvc.Models.Entities.JobPost>;
+}
+
+<div class="container my-5">
+    <!-- Header Section -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h1 class="card-title">@Model.CompanyName</h1>
+            <p class="badge bg-secondary">@Model.Industry</p>
+            <hr />
+            <h5>Company Profile</h5>
+            <p class="card-text">Welcome to @Model.CompanyName page.</p>
+        </div>
+    </div>
+
+    <!-- Open Vacancies Section -->
+    <h3 class="mb-3">Open Vacancies</h3>
+    <div class="list-group">
+        @if (openJobs != null && openJobs.Any())
+        {
+            foreach (var job in openJobs)
+            {
+                <a asp-controller="JobPosts" asp-action="Details" asp-route-id="@job.Id" class="list-group-item list-group-item-action flex-column align-items-start mb-2 shadow-sm rounded">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1 text-primary">@job.Title</h5>
+                        <small class="text-muted">@job.JobType</small>
+                    </div>
+                    <p class="mb-1">📍 @job.City?.Name | 📁 @job.Category?.Name</p>
+                    <small class="text-muted">Closing Date: @(job.ClosingDate?.ToString("yyyy-MM-dd") ?? "N/A")</small>
+                </a>
+            }
+        }
+        else
+        {
+            <p class="text-muted">No open vacancies at the moment.</p>
+        }
+    </div>
+</div>

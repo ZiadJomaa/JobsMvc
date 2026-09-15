@@ -18,6 +18,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Resume> Resumes => Set<Resume>();
     public DbSet<JobPost> JobPosts => Set<JobPost>();
     public DbSet<JobApplication> JobApplications => Set<JobApplication>();
+    public DbSet<ApplicationStatusHistory> ApplicationStatusHistories => Set<ApplicationStatusHistory>();
     public DbSet<CompanyProfile_City> CompanyProfileCities => Set<CompanyProfile_City>();
     public DbSet<JobSeeker_Skill> JobSeekerSkills => Set<JobSeeker_Skill>();
     public DbSet<JobPost_Skill> JobPostSkills => Set<JobPost_Skill>();
@@ -97,6 +98,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                   .WithMany(s => s.JobApplications)
                   .HasForeignKey(a => a.JobSeekerId)
                   .OnDelete(DeleteBehavior.Restrict);
+        });
+        builder.Entity<ApplicationStatusHistory>(entity =>
+        {
+            entity.HasKey(h => h.Id);
+
+            entity.HasOne(h => h.JobApplication)
+                  .WithMany()
+                  .HasForeignKey(h => h.JobApplicationId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

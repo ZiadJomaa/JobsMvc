@@ -33,6 +33,19 @@ namespace JobsMvc.Areas.Admin.Controllers
             ViewBag.PendingJobs = await _context.JobPosts.CountAsync(j => !j.IsApproved);
             ViewBag.TotalCategories = await _context.Categories.CountAsync();
             ViewBag.TotalUsers = await _context.Users.CountAsync();
+            ViewBag.TotalCompanies = await _context.CompanyProfiles.CountAsync();
+            ViewBag.ApprovedJobs = await _context.JobPosts.CountAsync(j => j.IsApproved);
+            ViewBag.TotalApplications = await _context.JobApplications.CountAsync();
+            var applicationsByStatus = await _context.JobApplications
+    .GroupBy(a => a.Status)
+    .Select(g => new
+    {
+        Status = g.Key.ToString(),
+        Count = g.Count()
+    })
+    .ToListAsync();
+
+            ViewBag.ApplicationsByStatus = applicationsByStatus;
 
             return View();
         }

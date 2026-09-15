@@ -20,6 +20,35 @@ namespace JobsMvc.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
+        [AllowAnonymous]
+        public async Task<IActionResult> Details(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return NotFound();
+
+            var company = await _context.CompanyProfiles
+                .Include(c => c.OperatingCities)
+                    .ThenInclude(oc => oc.City)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (company == null)
+                return NotFound();
+
+            var openJobs = await _context.JobPosts
+                .Include(j => j.City)
+                .Include(j => j.Category)
+                .Where(j =>
+                    j.CompanyId == id &&
+                    j.IsActive &&
+                    j.IsApproved &&
+                    (!j.ClosingDate.HasValue || j.ClosingDate.Value >= DateTime.UtcNow))
+                .OrderByDescending(j => j.CreatedAt)
+                .ToListAsync();
+
+            ViewBag.OpenJobs = openJobs;
+
+            return View("~/Views/Companies/Details.cshtml", company);
+        }
         public async Task<IActionResult> Profile()
         {
             var companyId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -133,5 +162,6 @@ namespace JobsMvc.Controllers
         {
             vm.AllCities = await _context.Cities.OrderBy(c => c.Name).ToListAsync();
         }
+
     }
 }

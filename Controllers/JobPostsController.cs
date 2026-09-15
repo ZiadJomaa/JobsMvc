@@ -411,10 +411,20 @@ namespace JobsMvc.Controllers
                 JobPostId = jobPostId,
                 JobSeekerId = userId,
                 AppliedAt = DateTime.UtcNow,
-                Status = ApplicationStatus.Pending
+                Status = ApplicationStatus.Applied
             };
 
             _context.JobApplications.Add(application);
+            await _context.SaveChangesAsync();
+
+            var history = new ApplicationStatusHistory
+            {
+                JobApplicationId = application.Id,
+                Status = ApplicationStatus.Applied,
+                ChangedAt = application.AppliedAt
+            };
+
+            _context.ApplicationStatusHistories.Add(history);
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Your application has been submitted successfully!";
@@ -443,19 +453,35 @@ namespace JobsMvc.Controllers
                 .OrderBy(s => s.Name)
                 .ToListAsync();
         }
-
         [Authorize(Roles = "Company")]
-        public async Task<IActionResult> ViewApplications(int id)
+        public async Task<IActionResult> ViewApplications(int id, ApplicationStatus? status)
         {
             var companyId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var jobPost = await _context.JobPosts
-                .Include(j => j.Applications)
-                    .ThenInclude(a => a.JobSeeker)
-                .FirstOrDefaultAsync(j => j.Id == id && j.CompanyId == companyId);
+     .Include(j => j.Applications)
+         .ThenInclude(a => a.JobSeeker)
+             .ThenInclude(s => s.Resumes)
+                 .FirstOrDefaultAsync(j =>
+                    j.Id == id &&
+                    j.CompanyId == companyId);
 
             if (jobPost == null)
                 return NotFound();
+
+            var applications = jobPost.Applications.AsQueryable();
+
+            if (status.HasValue)
+            {
+                applications = applications
+                    .Where(a => a.Status == status.Value);
+            }
+
+            ViewBag.SelectedStatus = status;
+
+            jobPost.Applications = applications
+                .OrderByDescending(a => a.AppliedAt)
+                .ToList();
 
             return View(jobPost);
         }
@@ -463,7 +489,10 @@ namespace JobsMvc.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Company")]
-        public async Task<IActionResult> UpdateApplicationStatus(int applicationId, ApplicationStatus status)
+        public async Task<IActionResult> UpdateApplicationStatus(
+    int applicationId,
+    ApplicationStatus status,
+    string? privateNote)
         {
             var application = await _context.JobApplications
                 .Include(a => a.JobPost)
@@ -473,14 +502,35 @@ namespace JobsMvc.Controllers
                 return NotFound();
 
             var companyId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             if (application.JobPost.CompanyId != companyId)
                 return Forbid();
 
             application.Status = status;
+
+            if (!string.IsNullOrWhiteSpace(privateNote))
+            {
+                application.HrPrivateNote = privateNote;
+            }
+
+            await _context.SaveChangesAsync();
+
+            var history = new ApplicationStatusHistory
+            {
+                JobApplicationId = application.Id,
+                Status = status,
+                ChangedAt = DateTime.UtcNow
+            };
+
+            _context.ApplicationStatusHistories.Add(history);
+
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Application status updated successfully!";
-            return RedirectToAction(nameof(ViewApplications), new { id = application.JobPostId });
+
+            return RedirectToAction(
+                nameof(ViewApplications),
+                new { id = application.JobPostId });
         }
 
         [Authorize(Roles = "Company")]
@@ -491,15 +541,45 @@ namespace JobsMvc.Controllers
             if (companyId == null)
                 return Unauthorized();
 
-            // جلب التطبيقات مع ربط الـ JobSeeker مباشرة بطريقة آمنة
-            var applications = await _context.JobApplications
-                .Include(a => a.JobPost)
-                .Include(a => a.JobSeeker)
-                .Where(a => a.JobPost.CompanyId == companyId)
-                .OrderByDescending(a => a.AppliedAt)
-                .ToListAsync();
+            var jobs = await _context.JobPosts
+          .Where(j => j.CompanyId == companyId)
+           .Include(j => j.Applications)
+             .ThenInclude(a => a.JobSeeker)
+              .ToListAsync();
 
-            return View(applications);
+            var applications = jobs
+                .SelectMany(j => j.Applications)
+                .ToList();
+
+            var weekStart = DateTime.UtcNow.AddDays(-7);
+
+            ViewBag.OpenJobs = jobs.Count(j =>
+                j.IsActive &&
+                (!j.ClosingDate.HasValue || j.ClosingDate.Value >= DateTime.UtcNow));
+
+            ViewBag.TotalApplications = applications.Count;
+
+            ViewBag.NewApplicationsThisWeek = applications.Count(a =>
+                a.AppliedAt >= weekStart);
+
+            ViewBag.AcceptedApplications = applications.Count(a =>
+                a.Status == ApplicationStatus.Accepted);
+
+            ViewBag.AppliedCount = applications.Count(a =>
+                a.Status == ApplicationStatus.Applied);
+
+            ViewBag.UnderReviewCount = applications.Count(a =>
+                a.Status == ApplicationStatus.UnderReview);
+
+            ViewBag.InterviewCount = applications.Count(a =>
+                a.Status == ApplicationStatus.Interview);
+
+            ViewBag.RejectedCount = applications.Count(a =>
+                a.Status == ApplicationStatus.Rejected);
+
+            return View(applications
+                .OrderByDescending(a => a.AppliedAt)
+                .ToList());
         }
 
         [HttpPost]
@@ -519,6 +599,16 @@ namespace JobsMvc.Controllers
                 return Forbid();
 
             application.Status = status;
+            await _context.SaveChangesAsync();
+
+            var history = new ApplicationStatusHistory
+            {
+                JobApplicationId = application.Id,
+                Status = status,
+                ChangedAt = DateTime.UtcNow
+            };
+
+            _context.ApplicationStatusHistories.Add(history);
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Status updated successfully!";

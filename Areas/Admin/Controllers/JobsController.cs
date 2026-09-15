@@ -1,5 +1,6 @@
 ﻿using JobsMvc.Data;
 using JobsMvc.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 namespace JobsMvc.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class JobsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -52,7 +54,6 @@ namespace JobsMvc.Areas.Admin.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
-        // اعتماد الوظيفة
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approve(int id)

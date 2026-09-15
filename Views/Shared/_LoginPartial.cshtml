@@ -6,10 +6,32 @@
 <div class="navbar-nav ms-auto p-4 p-lg-0 align-items-center">
 @if (SignInManager.IsSignedIn(User))
 {
-    @if (User.IsInRole("JobSeeker"))
-    {
-        <a class="nav-item nav-link" asp-controller="JobSeeker" asp-action="EditProfile">Profile</a>
-    }
+      @if (User.IsInRole("JobSeeker"))
+{
+    <li class="nav-item">
+        <a class="nav-link"
+           asp-controller="JobSeeker"
+           asp-action="Dashboard">
+            Dashboard
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link"
+           asp-controller="JobSeeker"
+           asp-action="MyApplications">
+            My Applications
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link"
+           asp-controller="JobSeeker"
+           asp-action="EditProfile">
+            Profile
+        </a>
+    </li>
+}
     else if (User.IsInRole("Company"))
     {
         <a class="nav-item nav-link" asp-controller="Company" asp-action="Profile">Company Profile</a>

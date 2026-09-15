@@ -1,0 +1,111 @@
+﻿@model JobsMvc.Models.Entities.CompanyProfile
+
+@{
+    ViewData["Title"] = Model.CompanyName;
+    var openJobs = ViewBag.OpenJobs as IEnumerable<JobsMvc.Models.Entities.JobPost>;
+}
+
+<div class="container my-5">
+
+    <!-- Company Information -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+
+            <div class="d-flex align-items-center gap-3 mb-3">
+
+                @if (!string.IsNullOrEmpty(Model.LogoPath))
+                {
+                    <img src="@Model.LogoPath"
+                         alt="@Model.CompanyName"
+                         style="width:80px;height:80px;object-fit:cover;border-radius:10px;" />
+                }
+
+                <div>
+                    <h1 class="card-title mb-1">@Model.CompanyName</h1>
+
+                    @if (!string.IsNullOrEmpty(Model.Industry))
+                    {
+                        <span class="badge bg-secondary">@Model.Industry</span>
+                    }
+                </div>
+
+            </div>
+
+            <hr />
+
+            <h5>Company Information</h5>
+
+            <p>
+                <strong>Operating Cities:</strong>
+            </p>
+
+            @if (Model.OperatingCities != null && Model.OperatingCities.Any())
+            {
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var companyCity in Model.OperatingCities)
+                    {
+                        <span class="badge bg-light text-dark border">
+                            📍 @companyCity.City.Name
+                        </span>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">No cities specified.</p>
+            }
+
+        </div>
+    </div>
+
+
+    <!-- Open Vacancies -->
+    <h3 class="mb-3">Open Vacancies</h3>
+
+    @if (openJobs != null && openJobs.Any())
+    {
+        <div class="list-group">
+
+            @foreach (var job in openJobs)
+            {
+                <a asp-controller="JobPosts"
+                   asp-action="Details"
+                   asp-route-id="@job.Id"
+                   class="list-group-item list-group-item-action mb-2 shadow-sm rounded">
+
+                    <div class="d-flex w-100 justify-content-between">
+
+                        <h5 class="mb-1 text-primary">
+                            @job.Title
+                        </h5>
+
+                        <small class="text-muted">
+                            @job.JobType
+                        </small>
+
+                    </div>
+
+                    <p class="mb-1">
+                        📍 @job.City?.Name
+                        |
+                        📁 @job.Category?.Name
+                    </p>
+
+                    <small class="text-muted">
+                        Closing Date:
+                        @(job.ClosingDate?.ToString("yyyy-MM-dd") ?? "N/A")
+                    </small>
+
+                </a>
+            }
+
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">
+            No open vacancies at the moment.
+        </p>
+    }
+
+</div>

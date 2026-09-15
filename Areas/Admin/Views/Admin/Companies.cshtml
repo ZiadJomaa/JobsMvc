@@ -158,6 +158,13 @@
                             </td>
 
                             <td class="text-end">
+                                <a asp-area=""
+                                asp-controller="Company"
+                                     asp-action="Details"
+                                      asp-route-id="@company.Id"
+                         class="btn btn-sm btn-outline-primary me-2">
+                                      View Details
+                                          </a>
                                 @if (!company.IsApproved)
                                 {
                                     <form asp-area="Admin"

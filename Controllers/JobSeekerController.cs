@@ -1,11 +1,12 @@
-using System.Security.Claims;
+using JobsMvc.Data;
+using JobsMvc.Models.Entities;
+using JobsMvc.Models.Enums;
+using JobsMvc.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using JobsMvc.Data;
-using JobsMvc.Models.Entities;
-using JobsMvc.ViewModels;
+using System.Security.Claims;
 
 namespace JobsMvc.Controllers;
 
@@ -166,4 +167,46 @@ public class JobSeekerController : Controller
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Resumes));
     }
+    [Authorize(Roles = "JobSeeker")]
+    public async Task<IActionResult> MyApplications()
+    {
+        var applications = await _context.JobApplications
+            .Include(a => a.JobPost)
+                .ThenInclude(j => j.Company)
+            .Where(a => a.JobSeekerId == CurrentUserId)
+            .OrderByDescending(a => a.AppliedAt)
+            .ToListAsync();
+
+        var applicationIds = applications
+            .Select(a => a.Id)
+            .ToList();
+
+        var histories = await _context.ApplicationStatusHistories
+            .Where(h => applicationIds.Contains(h.JobApplicationId))
+            .OrderBy(h => h.ChangedAt)
+            .ToListAsync();
+
+        ViewBag.StatusHistories = histories;
+
+        return View(applications);
+    }
+    [HttpGet]
+    public async Task<IActionResult> Dashboard()
+    {
+        var applications = _context.JobApplications
+            .Where(a => a.JobSeekerId == CurrentUserId);
+
+        ViewBag.TotalApplications = await applications.CountAsync();
+
+        ViewBag.PendingApplications = await applications.CountAsync(
+            a => a.Status == ApplicationStatus.Applied ||
+                 a.Status == ApplicationStatus.UnderReview ||
+                 a.Status == ApplicationStatus.Interview);
+
+        ViewBag.AcceptedApplications = await applications.CountAsync(
+            a => a.Status == ApplicationStatus.Accepted);
+
+        return View();
+    }
+
 }

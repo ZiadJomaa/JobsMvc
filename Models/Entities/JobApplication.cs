@@ -5,7 +5,7 @@ namespace JobsMvc.Models.Entities;
 public class JobApplication
 {
     public int Id { get; set; }
-    public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
+    public ApplicationStatus Status { get; set; } = ApplicationStatus.Applied;
     public DateTime AppliedAt { get; set; } = DateTime.UtcNow;
     public string? HrPrivateNote { get; set; }
     public decimal? AiTermScore { get; set; }

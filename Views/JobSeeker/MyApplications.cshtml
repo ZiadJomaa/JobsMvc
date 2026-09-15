@@ -1,0 +1,133 @@
+﻿@using JobsMvc.Models.Entities
+@using JobsMvc.Models.Enums
+@model IEnumerable<JobApplication>
+
+@{
+    ViewData["Title"] = "My Applications";
+
+    var histories = ViewBag.StatusHistories as List<ApplicationStatusHistory>
+                    ?? new List<ApplicationStatusHistory>();
+}
+
+<div class="container mt-4">
+
+    <h2 class="mb-4">My Applications</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You haven't applied for any jobs yet.
+        </div>
+    }
+    else
+    {
+        foreach (var application in Model)
+        {
+            var applicationHistory = histories
+                .Where(h => h.JobApplicationId == application.Id)
+                .OrderBy(h => h.ChangedAt)
+                .ToList();
+
+            <div class="card mb-4 shadow-sm">
+
+                <div class="card-body">
+
+                    <h4 class="card-title">
+                        @application.JobPost?.Title
+                    </h4>
+
+                    <p class="mb-2">
+                        <strong>Company:</strong>
+                        @application.JobPost?.Company?.CompanyName
+                    </p>
+
+                    <p class="mb-2">
+                        <strong>Applied At:</strong>
+                        @application.AppliedAt.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")
+                    </p>
+
+                    <p class="mb-3">
+                        <strong>Current Status:</strong>
+
+                        @switch (application.Status)
+                        {
+                            case ApplicationStatus.Applied:
+                                <span class="badge bg-primary">Applied</span>
+                                break;
+
+                            case ApplicationStatus.UnderReview:
+                                <span class="badge bg-warning text-dark">Under Review</span>
+                                break;
+
+                            case ApplicationStatus.Interview:
+                                <span class="badge bg-info text-dark">Interview</span>
+                                break;
+
+                            case ApplicationStatus.Accepted:
+                                <span class="badge bg-success">Accepted</span>
+                                break;
+
+                            case ApplicationStatus.Rejected:
+                                <span class="badge bg-danger">Rejected</span>
+                                break;
+                        }
+                    </p>
+
+                    <h5 class="mt-4">Status History</h5>
+
+                    @if (applicationHistory.Any())
+                    {
+                        <ul class="list-group">
+
+                            @foreach (var history in applicationHistory)
+                            {
+                                <li class="list-group-item d-flex justify-content-between">
+
+                                    <span>
+                                        @switch (history.Status)
+                                        {
+                                            case ApplicationStatus.Applied:
+                                                <strong>Applied</strong>
+                                                break;
+
+                                            case ApplicationStatus.UnderReview:
+                                                <strong>Under Review</strong>
+                                                break;
+
+                                            case ApplicationStatus.Interview:
+                                                <strong>Interview</strong>
+                                                break;
+
+                                            case ApplicationStatus.Accepted:
+                                                <strong>Accepted</strong>
+                                                break;
+
+                                            case ApplicationStatus.Rejected:
+                                                <strong>Rejected</strong>
+                                                break;
+                                        }
+                                    </span>
+
+                                    <span>
+                                        @history.ChangedAt.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")
+                                    </span>
+
+                                </li>
+                            }
+
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-muted">
+                            No status history available.
+                        </p>
+                    }
+
+                </div>
+
+            </div>
+        }
+    }
+
+</div>

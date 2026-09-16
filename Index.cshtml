@@ -1,0 +1,459 @@
+﻿@using JobsMvc.Models.Enums
+@model IEnumerable<JobsMvc.Models.Entities.JobPost>
+
+@{
+    ViewData["Title"] = "Job Posts";
+
+    var searchTitle = Context.Request.Query["searchTitle"].ToString();
+    var cityId = Context.Request.Query["cityId"].ToString();
+    var categoryId = Context.Request.Query["categoryId"].ToString();
+    var jobType = Context.Request.Query["jobType"].ToString();
+    var experienceLevel = Context.Request.Query["experienceLevel"].ToString();
+    var minSalary = Context.Request.Query["minSalary"].ToString();
+    var maxSalary = Context.Request.Query["maxSalary"].ToString();
+    var sortOrder = Context.Request.Query["sortOrder"].ToString();
+
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var totalPages = ViewBag.TotalPages ?? 1;
+}
+
+<div class="container mt-4">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Job Posts</h1>
+
+        @if (User.IsInRole("Company"))
+        {
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i>
+                Add New Job
+            </a>
+        }
+    </div>
+
+
+    <!-- Search & Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+
+            <h5 class="card-title mb-3">
+                Search & Filter Jobs
+            </h5>
+
+            <form asp-action="Index" method="get">
+
+                <div class="row g-3">
+
+                    <!-- Job Title -->
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label">Job Title</label>
+
+                        <input type="text"
+                               name="searchTitle"
+                               class="form-control"
+                               placeholder="Search by job title..."
+                               value="@searchTitle" />
+                    </div>
+
+
+                    <!-- City -->
+                    <div class="col-md-6 col-lg-2">
+                        <label class="form-label">City</label>
+
+                        @Html.DropDownList(
+                            "cityId",
+                            ViewBag.Cities as SelectList,
+                            "All Cities",
+                            new { @class = "form-select" }
+                        )
+                    </div>
+
+
+                    <!-- Category -->
+                    <div class="col-md-6 col-lg-2">
+                        <label class="form-label">Category</label>
+
+                        @Html.DropDownList(
+                            "categoryId",
+                            ViewBag.Categories as SelectList,
+                            "All Categories",
+                            new { @class = "form-select" }
+                        )
+                    </div>
+
+
+                    <!-- Job Type -->
+                    <div class="col-md-6 col-lg-2">
+                        <label class="form-label">Job Type</label>
+
+                        <select name="jobType" class="form-select">
+
+                            <option value="">
+                                All Job Types
+                            </option>
+
+                            @foreach (var type in Enum.GetValues<JobType>())
+                            {
+                                <option value="@type"
+                                        selected="@(jobType == type.ToString() ? "selected" : null)">
+                                    @type
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+
+
+                    <!-- Experience Level -->
+                    <div class="col-md-6 col-lg-2">
+                        <label class="form-label">Experience</label>
+
+                        <select name="experienceLevel" class="form-select">
+
+                            <option value="">
+                                All Levels
+                            </option>
+
+                            @foreach (var level in Enum.GetValues<ExperienceLevel>())
+                            {
+                                <option value="@level"
+                                        selected="@(experienceLevel == level.ToString() ? "selected" : null)">
+                                    @level
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+
+
+                    <!-- Minimum Salary -->
+                    <div class="col-md-6 col-lg-3">
+                        <label class="form-label">Minimum Salary</label>
+
+                        <input type="number"
+                               name="minSalary"
+                               class="form-control"
+                               placeholder="Minimum salary"
+                               value="@minSalary"
+                               min="0" />
+                    </div>
+
+
+                    <!-- Maximum Salary -->
+                    <div class="col-md-6 col-lg-3">
+                        <label class="form-label">Maximum Salary</label>
+
+                        <input type="number"
+                               name="maxSalary"
+                               class="form-control"
+                               placeholder="Maximum salary"
+                               value="@maxSalary"
+                               min="0" />
+                    </div>
+
+
+                    <!-- Sort -->
+                    <div class="col-md-6 col-lg-3">
+                        <label class="form-label">Sort By</label>
+
+                        <select name="sortOrder" class="form-select">
+
+                            <option value=""
+                                    selected="@(string.IsNullOrEmpty(sortOrder) ? "selected" : null)">
+                                Newest
+                            </option>
+
+                            <option value="oldest"
+                                    selected="@(sortOrder == "oldest" ? "selected" : null)">
+                                Oldest
+                            </option>
+
+                            <option value="salaryHigh"
+                                    selected="@(sortOrder == "salaryHigh" ? "selected" : null)">
+                                Highest Salary
+                            </option>
+
+                            <option value="salaryLow"
+                                    selected="@(sortOrder == "salaryLow" ? "selected" : null)">
+                                Lowest Salary
+                            </option>
+
+                        </select>
+                    </div>
+
+
+                    <!-- Buttons -->
+                    <div class="col-md-6 col-lg-3 d-flex align-items-end gap-2">
+
+                        <button type="submit"
+                                class="btn btn-success flex-grow-1">
+                            Search
+                        </button>
+
+                        <a asp-action="Index"
+                           class="btn btn-outline-secondary">
+                            Reset
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+
+    <!-- Jobs Table -->
+    <div class="card shadow-sm">
+
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+
+                <table class="table table-striped table-hover align-middle mb-0">
+
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Title</th>
+                            <th>Company</th>
+                            <th>City</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+
+
+                    <tbody>
+
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var job in Model)
+                            {
+                                <tr>
+
+                                    <!-- Title -->
+                                    <td>
+                                        <a asp-action="Details"
+                                           asp-route-id="@job.Id"
+                                           class="text-decoration-none fw-semibold">
+                                            @job.Title
+                                        </a>
+                                    </td>
+
+
+                                    <!-- Company -->
+                                    <td>
+                                        @job.Company?.CompanyName
+                                    </td>
+
+
+                                    <!-- City -->
+                                    <td>
+                                        @job.City?.Name
+                                    </td>
+
+
+                                    <!-- Category -->
+                                    <td>
+                                        @job.Category?.Name
+                                    </td>
+
+
+                                    <!-- Job Type -->
+                                    <td>
+                                        @job.JobType
+                                    </td>
+
+
+                                    <!-- Status -->
+                                    <td>
+
+                                        @if (job.IsActive)
+                                        {
+                                            <span class="badge bg-success">
+                                                Active
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                Closed
+                                            </span>
+                                        }
+
+                                    </td>
+
+
+                                    <!-- Actions -->
+                                    <td class="text-center">
+
+                                        @if (User.IsInRole("Company"))
+                                        {
+                                            <div class="d-flex justify-content-center gap-1">
+
+                                                <!-- Edit -->
+                                                <a asp-action="Edit"
+                                                   asp-route-id="@job.Id"
+                                                   class="btn btn-sm btn-warning">
+                                                    Edit
+                                                </a>
+
+
+                                                <!-- Delete -->
+                                                <a asp-action="Delete"
+                                                   asp-route-id="@job.Id"
+                                                   class="btn btn-sm btn-danger">
+                                                    Delete
+                                                </a>
+
+
+                                                <!-- Close -->
+                                                @if (job.IsActive)
+                                                {
+                                                    <form asp-action="Close"
+                                                          asp-route-id="@job.Id"
+                                                          method="post"
+                                                          class="d-inline">
+
+                                                        @Html.AntiForgeryToken()
+
+                                                        <button type="submit"
+                                                                class="btn btn-sm btn-dark"
+                                                                onclick="return confirm('Are you sure you want to close this job?')">
+                                                            Close
+                                                        </button>
+
+                                                    </form>
+                                                }
+
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <a asp-action="Details"
+                                               asp-route-id="@job.Id"
+                                               class="btn btn-sm btn-outline-primary">
+                                                View
+                                            </a>
+                                        }
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7"
+                                    class="text-center py-5">
+
+                                    <div class="text-muted">
+                                        <h5>No jobs found</h5>
+                                        <p class="mb-0">
+                                            Try changing your search or filters.
+                                        </p>
+                                    </div>
+
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Pagination -->
+    @if (totalPages > 1)
+    {
+        <nav class="mt-4"
+             aria-label="Job posts pagination">
+
+            <ul class="pagination justify-content-center">
+
+                <!-- Previous -->
+                <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(currentPage - 1)"
+                       asp-route-searchTitle="@searchTitle"
+                       asp-route-cityId="@cityId"
+                       asp-route-categoryId="@categoryId"
+                       asp-route-jobType="@jobType"
+                       asp-route-experienceLevel="@experienceLevel"
+                       asp-route-minSalary="@minSalary"
+                       asp-route-maxSalary="@maxSalary"
+                       asp-route-sortOrder="@sortOrder">
+
+                        Previous
+
+                    </a>
+
+                </li>
+
+
+                <!-- Page Numbers -->
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(i == currentPage ? "active" : "")">
+
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@i"
+                           asp-route-searchTitle="@searchTitle"
+                           asp-route-cityId="@cityId"
+                           asp-route-categoryId="@categoryId"
+                           asp-route-jobType="@jobType"
+                           asp-route-experienceLevel="@experienceLevel"
+                           asp-route-minSalary="@minSalary"
+                           asp-route-maxSalary="@maxSalary"
+                           asp-route-sortOrder="@sortOrder">
+
+                            @i
+
+                        </a>
+
+                    </li>
+                }
+
+
+                <!-- Next -->
+                <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(currentPage + 1)"
+                       asp-route-searchTitle="@searchTitle"
+                       asp-route-cityId="@cityId"
+                       asp-route-categoryId="@categoryId"
+                       asp-route-jobType="@jobType"
+                       asp-route-experienceLevel="@experienceLevel"
+                       asp-route-minSalary="@minSalary"
+                       asp-route-maxSalary="@maxSalary"
+                       asp-route-sortOrder="@sortOrder">
+
+                        Next
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </nav>
+    }
+
+</div>

@@ -80,41 +80,48 @@
             </div>
         </div>
         <!-- Carousel End -->
-       <form asp-controller="Home" asp-action="Index" method="get" class="row g-2">
-    <div class="col-md-4">
-        <input type="text" name="searchString" value="@ViewData["CurrentSearch"]" class="form-control" placeholder="Search by job title..." />
+<!-- Search Start -->
+<div class="container-fluid bg-primary mb-5 wow fadeIn" data-wow-delay="0.1s" style="padding: 35px;">
+    <div class="container">
+        <form asp-controller="Home" asp-action="Index" method="get" class="row g-2">
+            <div class="col-md-10">
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <input type="text" name="searchString" value="@ViewData["CurrentSearch"]" class="form-control border-0" placeholder="Search by job title..." />
+                    </div>
+                    <div class="col-md-4">
+                        <select name="categoryId" class="form-select border-0">
+                            <option value="">All Categories</option>
+                            @if (Model.Categories != null)
+                            {
+                                foreach (var cat in Model.Categories)
+                                {
+                                    <option value="@cat.Id" selected="@(ViewData["CurrentCategory"]?.ToString() == cat.Id.ToString())">@cat.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select name="cityId" class="form-select border-0">
+                            <option value="">All Cities</option>
+                            @if (Model.Cities != null)
+                            {
+                                foreach (var city in Model.Cities)
+                                {
+                                    <option value="@city.Id" selected="@(ViewData["CurrentCity"]?.ToString() == city.Id.ToString())">@city.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-dark border-0 w-100 h-100">Search</button>
+            </div>
+        </form>
     </div>
-
-    <div class="col-md-3">
-        <select name="categoryId" class="form-select">
-            <option value="">All Categories</option>
-            @if (Model.Categories != null)
-            {
-                foreach (var cat in Model.Categories)
-                {
-                    <option value="@cat.Id" selected="@(ViewData["CurrentCategory"]?.ToString() == cat.Id.ToString())">@cat.Name</option>
-                }
-            }
-        </select>
-    </div>
-
-    <div class="col-md-3">
-        <select name="cityId" class="form-select">
-            <option value="">All Cities</option>
-            @if (Model.Cities != null)
-            {
-                foreach (var city in Model.Cities)
-                {
-                    <option value="@city.Id" selected="@(ViewData["CurrentCity"]?.ToString() == city.Id.ToString())">@city.Name</option>
-                }
-            }
-        </select>
-    </div>
-
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Search</button>
-    </div>
-</form>
+</div>
+<!-- Search End -->
         <!-- Category Start -->
         <div class="container-xxl py-5">
             <div class="container">
@@ -173,7 +180,8 @@
         </div>
         <!-- About End -->
 
-<!-- Jobs Start --><div class="container-xxl py-5">
+<!-- Jobs Start -->
+<div id="job-listing" class="container-xxl py-5">
     <div class="container">
         <h1 class="text-center mb-5 wow fadeInUp" data-wow-delay="0.1s">Job Listing</h1>
         <div class="tab-class text-center wow fadeInUp" data-wow-delay="0.3s">
@@ -215,8 +223,9 @@
                 </div>
             </div>
         </div>
-    </div></div><!-- Jobs End -->
-
+    </div>
+</div>
+<!-- Jobs End -->
         <!-- Testimonial Start -->
         <div class="container-fliud py-5 wow fadeInUp" data-wow-delay="0.1s">
             <div class="container">
@@ -306,7 +315,7 @@
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <h5 class="text-white mb-4">Newsletter</h5>
-                        <p>Dolor amet sit justo amet elitr clita ipsum elitr est.</p>
+                        <p>Subscribe for latest job alerts.</p>
                         <div class="position-relative mx-auto" style="max-width: 400px;">
                             <input class="form-control bg-transparent w-100 py-3 ps-4 pe-5" type="text" placeholder="Your email">
                             <button type="button" class="btn btn-primary py-2 position-absolute top-0 end-0 mt-2 me-2">SignUp</button>

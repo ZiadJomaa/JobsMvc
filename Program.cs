@@ -31,6 +31,7 @@ builder.Services.AddRazorPages();
 var app = builder.Build();
 
 // HTTP request pipeline
+app.UseDeveloperExceptionPage();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -69,6 +70,8 @@ app.MapRazorPages();
     var services = scope.ServiceProvider;
     try
     {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        context.Database.Migrate();
         await DbSeeder.SeedDefaultDataAsync(services);
     }
     catch (Exception ex)

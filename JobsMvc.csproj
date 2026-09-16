@@ -3,7 +3,7 @@
   <PropertyGroup>
 	    <NoWarn>$(NoWarn);NU1903</NoWarn>
 
-    <TargetFramework>net10.0</TargetFramework>
+  <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-JobsMvc-eac55cba-b2b4-4211-97e0-a9c74124ca82</UserSecretsId>

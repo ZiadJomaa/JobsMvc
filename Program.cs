@@ -28,11 +28,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-var app = builder.Build();
 
 var app = builder.Build();
 
-// HTTP request pipeline 
+// HTTP request pipeline
 app.UseDeveloperExceptionPage();
 
 app.UseStatusCodePagesWithReExecute("/Home/NotFound");
@@ -56,9 +55,9 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
-
-// Seed initial data
-  using (var scope = app.Services.CreateScope())
+   
+// Seed initial data & Auto Migrate
+using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
@@ -73,4 +72,5 @@ app.MapRazorPages();
         logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
+
 app.Run();

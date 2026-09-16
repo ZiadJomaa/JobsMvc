@@ -1,0 +1,351 @@
+﻿@{
+    ViewData["Title"] = "AI Job Assistant";
+}
+
+<div class="container mt-4 mb-5" style="max-width: 800px;">
+    <!-- Chat Header with New Chat Button -->
+    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <div class="d-flex align-items-center">
+            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 45px; height: 45px;">
+                <i class="bi bi-robot fs-4"></i>
+            </div>
+            <div>
+                <h4 class="mb-0 fw-bold">JobEntry AI Assistant</h4>
+                <small class="text-muted">Ask anything about available jobs in our database</small>
+            </div>
+        </div>
+        <!-- New Chat Button -->
+        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-1" onclick="clearChat()">
+            <i class="bi bi-plus-lg"></i> New Chat
+        </button>
+    </div>
+
+    <!-- Chat Box Container -->
+    <div class="card shadow border-0 rounded-4 overflow-hidden">
+        <div class="card-body bg-light" id="chatContainer" style="height: 520px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding: 20px;">
+            
+            <!-- Initial Welcome Message -->
+            <div class="d-flex align-items-start ai-message-row">
+                <div class="bg-white p-3 rounded-4 ai-card-glow border-0 border-start border-primary border-4 position-relative" style="max-width: 85%; border-bottom-left-radius: 4px !important;">
+                    <div class="fw-bold text-primary mb-1 d-flex align-items-center justify-content-between">
+                        <span><i class="bi bi-robot"></i> AI Assistant</span>
+                    </div>
+                    <p class="mb-0 text-dark" style="font-size: 0.95rem; line-height: 1.6;">Hello! I am your AI assistant. How can I help you find your next career opportunity today?</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Chat Input Form Footer -->
+        <div class="card-footer bg-white p-3 border-top">
+            <!-- Quick Prompt Badges (Initial) -->
+            <div id="initialPrompts" class="mb-2 d-flex flex-wrap gap-1" style="position: relative; z-index: 10;">
+                <button type="button" class="badge bg-light text-primary border border-primary-subtle px-3 py-2 text-decoration-none rounded-pill shadow-sm" style="cursor: pointer;" onclick="sendPresetQuestion('What jobs are available?')">What jobs are available?</button>
+                <button type="button" class="badge bg-light text-primary border border-primary-subtle px-3 py-2 text-decoration-none rounded-pill shadow-sm" style="cursor: pointer;" onclick="sendPresetQuestion('Are there any .NET developer jobs?')">Are there any .NET developer jobs?</button>
+                <button type="button" class="badge bg-light text-primary border border-primary-subtle px-3 py-2 text-decoration-none rounded-pill shadow-sm" style="cursor: pointer;" onclick="sendPresetQuestion('Show me junior positions')">Show me junior positions</button>
+                <button type="button" class="badge bg-light text-primary border border-primary-subtle px-3 py-2 text-decoration-none rounded-pill shadow-sm" style="cursor: pointer;" onclick="sendPresetQuestion('What are the salaries of available jobs?')">What are the salaries?</button>
+            </div>
+
+            <div class="d-flex gap-2">
+                <input type="text" class="form-control rounded-pill px-3 shadow-none border-secondary-subtle" id="userQuestion" name="userQuestion" placeholder="Type your question here..." autocomplete="off" />
+                <button type="button" class="btn btn-primary px-4 rounded-pill shadow-sm" id="submitBtn" onclick="handleMainButtonClick()">
+                    <span id="btnText"><i class="bi bi-send"></i> Send</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+    .ai-card-glow {
+        box-shadow: 0 4px 20px rgba(13, 110, 253, 0.08) !important;
+        transition: all 0.3s ease;
+    }
+    .ai-card-glow:hover {
+        box-shadow: 0 6px 25px rgba(13, 110, 253, 0.15) !important;
+    }
+
+    .typing-dots {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        height: 20px;
+        padding: 5px 0;
+    }
+    .typing-dots span {
+        width: 8px;
+        height: 8px;
+        background-color: #0d6efd;
+        border-radius: 50%;
+        display: inline-block;
+        animation: bounce 1.4s infinite ease-in-out both;
+    }
+    .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+    
+    @@keyframes bounce {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1.0); }
+    }
+
+    #chatContainer {
+        scroll-behavior: smooth;
+    }
+
+    .badge:hover, .followup-chip:hover {
+        background-color: #f1f8ff !important;
+        border-color: #0d6efd !important;
+        color: #0d6efd !important;
+    }
+
+    .copy-btn {
+        opacity: 0.6;
+        transition: opacity 0.2s;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        padding: 0 4px;
+        font-size: 0.85rem;
+    }
+    .copy-btn:hover {
+        opacity: 1;
+        color: #0d6efd !important;
+    }
+</style>
+
+<!-- JavaScript -->
+@section Scripts {
+    <script>
+        let isGenerating = false;
+        let currentController = null;
+
+        function sendPresetQuestion(questionText) {
+            if (isGenerating) return;
+            const inputField = document.getElementById('userQuestion');
+            inputField.value = questionText;
+            submitQuestion();
+        }
+
+        function scrollToBottom() {
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function clearChat() {
+            stopGeneration();
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.innerHTML = `
+                <div class="d-flex align-items-start ai-message-row">
+                    <div class="bg-white p-3 rounded-4 ai-card-glow border-0 border-start border-primary border-4 position-relative" style="max-width: 85%; border-bottom-left-radius: 4px !important;">
+                        <div class="fw-bold text-primary mb-1 d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-robot"></i> AI Assistant</span>
+                        </div>
+                        <p class="mb-0 text-dark" style="font-size: 0.95rem; line-height: 1.6;">Hello! I am your AI assistant. How can I help you find your next career opportunity today?</p>
+                    </div>
+                </div>`;
+            document.getElementById('userQuestion').value = '';
+            document.getElementById('initialPrompts').style.display = 'flex';
+            document.getElementById('userQuestion').focus();
+        }
+
+        function copyText(buttonElement, textToCopy) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalHTML = buttonElement.innerHTML;
+                buttonElement.innerHTML = '<i class="bi bi-check2 text-success"></i> Copied';
+                setTimeout(() => {
+                    buttonElement.innerHTML = originalHTML;
+                }, 2000);
+            });
+        }
+
+        function handleMainButtonClick() {
+            if (isGenerating) {
+                stopGeneration();
+            } else {
+                submitQuestion();
+            }
+        }
+
+        function stopGeneration() {
+            isGenerating = false;
+            if (currentController) {
+                currentController.abort();
+                currentController = null;
+            }
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            submitBtn.classList.remove('btn-danger');
+            submitBtn.classList.add('btn-primary');
+            btnText.innerHTML = '<i class="bi bi-send"></i> Send';
+        }
+
+        async function submitQuestion() {
+            const inputField = document.getElementById('userQuestion');
+            const question = inputField.value.trim();
+            if (!question) return;
+
+            const initialPrompts = document.getElementById('initialPrompts');
+            if (initialPrompts) initialPrompts.style.display = 'none';
+
+            const chatContainer = document.getElementById('chatContainer');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+
+            const userMsgHTML = `
+                <div class="d-flex align-items-start justify-content-end">
+                    <div class="bg-primary text-white p-3 rounded-4 shadow-sm" style="max-width: 80%; border-bottom-right-radius: 4px !important;">
+                        <div class="fw-bold text-light mb-1 text-end small"><small>You</small></div>
+                        <p class="mb-0" style="white-space: pre-line; font-size: 0.95rem;">${escapeHtml(question)}</p>
+                    </div>
+                </div>`;
+            chatContainer.insertAdjacentHTML('beforeend', userMsgHTML);
+            scrollToBottom();
+
+            inputField.value = '';
+            isGenerating = true;
+            
+            submitBtn.classList.remove('btn-primary');
+            submitBtn.classList.add('btn-danger');
+            btnText.innerHTML = '<i class="bi bi-stop-fill"></i> Stop';
+
+            currentController = new AbortController();
+
+            const typingId = 'typing-' + Date.now();
+            const typingHTML = `
+                <div id="${typingId}" class="d-flex align-items-start">
+                    <div class="bg-white p-3 rounded-4 ai-card-glow border-0 border-start border-primary border-4" style="max-width: 75%;">
+                        <div class="fw-bold text-primary mb-1 d-flex align-items-center gap-1"><small><i class="bi bi-robot"></i> AI Assistant</small></div>
+                        <div class="typing-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>`;
+            chatContainer.insertAdjacentHTML('beforeend', typingHTML);
+            scrollToBottom();
+
+            try {
+                const response = await fetch('/Ai/Ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userQuestion: question }),
+                    signal: currentController.signal
+                });
+
+                const rawData = await response.json();
+                document.getElementById(typingId)?.remove();
+
+                if (!isGenerating) return;
+
+                const resObj = JSON.parse(rawData.answer);
+
+                if (resObj.type === 'text') {
+                    // عرض النص كاملاً فوراً وبشكل آمن بدون مشاكل Typewriter
+                    const formattedContent = escapeHtml(resObj.content).replace(/\n/g, '<br>');
+                    const textHtml = `
+                        <div class="d-flex align-items-start ai-message-row">
+                            <div class="bg-white p-3 rounded-4 ai-card-glow border-0 border-start border-primary border-4 w-100" style="max-width: 85%; border-bottom-left-radius: 4px !important;">
+                                <div class="fw-bold text-primary mb-2 d-flex align-items-center justify-content-between">
+                                    <span><small><i class="bi bi-robot"></i> AI Assistant</small></span>
+                                    <button class="copy-btn text-muted" onclick="copyText(this, \`${resObj.content.replace(/`/g, '\\`')}\`)">
+                                        <i class="bi bi-clipboard"></i> Copy
+                                    </button>
+                                </div>
+                                <div class="text-dark" style="line-height: 1.7; font-size: 0.95rem;">${formattedContent}</div>
+                            </div>
+                        </div>`;
+                    chatContainer.insertAdjacentHTML('beforeend', textHtml);
+                    scrollToBottom();
+                    appendFollowUpChips(chatContainer, question);
+                } 
+                else if (resObj.type === 'jobs') {
+                    const count = resObj.content.length;
+                    const summaryHeaderHtml = `
+                        <div class="d-flex align-items-start ai-message-row">
+                            <div class="bg-white p-3 rounded-4 ai-card-glow border-0 border-start border-primary border-4" style="max-width: 85%; border-bottom-left-radius: 4px !important;">
+                                <div class="fw-bold text-primary mb-1 d-flex align-items-center gap-1">
+                                    <i class="bi bi-robot"></i> <small>AI Assistant</small>
+                                </div>
+                                <p class="mb-0 text-dark" style="font-size: 0.95rem;">I found ${count} matching opportunities for you:</p>
+                            </div>
+                        </div>`;
+                    chatContainer.insertAdjacentHTML('beforeend', summaryHeaderHtml);
+
+                    resObj.content.forEach((job, index) => {
+                        const jobCardHtml = `
+                            <div class="d-flex align-items-start ai-message-row">
+                                <div class="bg-white p-3 rounded-4 ai-card-glow border border-light-subtle w-100 position-relative" style="border-left: 4px solid #0d6efd !important; max-width: 90%;">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="fw-bold text-primary mb-0"><i class="bi bi-briefcase-fill me-1"></i> ${escapeHtml(job.title)}</h6>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button class="copy-btn text-muted" onclick="copyText(this, 'Job: ${escapeHtml(job.title)}\\nDescription: ${escapeHtml(job.description)}')">
+                                                <i class="bi bi-clipboard"></i>
+                                            </button>
+                                            <span class="badge bg-primary-subtle text-primary rounded-pill">#${index + 1}</span>
+                                        </div>
+                                    </div>
+                                    <p class="mb-0 text-muted small" style="line-height: 1.5;">${escapeHtml(job.description)}</p>
+                                </div>
+                            </div>`;
+                        chatContainer.insertAdjacentHTML('beforeend', jobCardHtml);
+                    });
+
+                    appendFollowUpChips(chatContainer, question);
+                }
+
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    document.getElementById(typingId)?.remove();
+                    const errorHTML = `
+                        <div class="d-flex align-items-start">
+                            <div class="bg-white p-3 rounded-4 shadow-sm border text-danger" style="max-width: 85%;">
+                                An error occurred while processing your request.
+                            </div>
+                        </div>`;
+                    chatContainer.insertAdjacentHTML('beforeend', errorHTML);
+                }
+            }
+
+            stopGeneration();
+            scrollToBottom();
+            inputField.focus();
+        }
+
+        function appendFollowUpChips(container, lastQuestion) {
+            let chipsHtml = `<div class="d-flex flex-wrap gap-1 mt-1 mb-2 ms-4 ps-2">`;
+            
+            if (lastQuestion.toLowerCase().includes('.net')) {
+                chipsHtml += `
+                    <button type="button" class="badge followup-chip bg-white text-primary border border-primary-subtle px-3 py-2 rounded-pill shadow-sm" style="cursor: pointer;" onclick="sendPresetQuestion('What is the salary for these .NET roles?')">What is the salary?</button>
+                    <button type="button" class="badge followup-chip bg-white text-primary border border-primary-subtle px-3 py-2 rounded-pill shadow-sm" style="cursor: pointer;" onclick="sendPresetQuestion('What are the requirements for these .NET roles?')">What are the requirements?</button>
+                    <button type="button" class="badge followup-chip bg-white text-primary border border-primary-subtle px-3 py-2 rounded-pill shadow-sm" style="cursor: pointer;" onclick="sendPresetQuestion('Show me junior positions')">Show me junior positions</button>`;
+            } else if (lastQuestion.toLowerCase().includes('junior')) {
+                chipsHtml += `
+                    <button type="button" class="badge followup-chip bg-white text-primary border border-primary-subtle px-3 py-2 rounded-pill shadow-sm" style="cursor: pointer;" onclick="sendPresetQuestion('What is the salary for junior positions?')">What is the salary?</button>
+                    <button type="button" class="badge followup-chip bg-white text-primary border border-primary-subtle px-3 py-2 rounded-pill shadow-sm" style="cursor: pointer;" onclick="sendPresetQuestion('Are there any remote junior jobs?')">Are there remote jobs?</button>
+                    <button type="button" class="badge followup-chip bg-white text-primary border border-primary-subtle px-3 py-2 rounded-pill shadow-sm" style="cursor: pointer;" onclick="sendPresetQuestion('What jobs are available?')">Show all jobs</button>`;
+            } else {
+                chipsHtml += `
+                    <button type="button" class="badge followup-chip bg-white text-primary border border-primary-subtle px-3 py-2 rounded-pill shadow-sm" style="cursor: pointer;" onclick="sendPresetQuestion('What are the salaries of available jobs?')">What are the salaries?</button>
+                    <button type="button" class="badge followup-chip bg-white text-primary border border-primary-subtle px-3 py-2 rounded-pill shadow-sm" style="cursor: pointer;" onclick="sendPresetQuestion('Are there any .NET developer jobs?')">Filter by .NET</button>
+                    <button type="button" class="badge followup-chip bg-white text-primary border border-primary-subtle px-3 py-2 rounded-pill shadow-sm" style="cursor: pointer;" onclick="sendPresetQuestion('Show me junior positions')">Junior positions</button>`;
+            }
+            chipsHtml += `</div>`;
+            
+            container.insertAdjacentHTML('beforeend', chipsHtml);
+            scrollToBottom();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        document.getElementById('userQuestion').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                handleMainButtonClick();
+            }
+        });
+    </script>
+}

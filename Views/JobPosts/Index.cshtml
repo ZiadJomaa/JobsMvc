@@ -4,132 +4,252 @@
 @{
     ViewData["Title"] = "Job Posts";
 
-    var searchTitle = Context.Request.Query["searchTitle"].ToString();
-    var cityId = Context.Request.Query["cityId"].ToString();
-    var categoryId = Context.Request.Query["categoryId"].ToString();
-    var jobType = Context.Request.Query["jobType"].ToString();
-    var experienceLevel = Context.Request.Query["experienceLevel"].ToString();
-    var minSalary = Context.Request.Query["minSalary"].ToString();
-    var maxSalary = Context.Request.Query["maxSalary"].ToString();
-    var sortOrder = Context.Request.Query["sortOrder"].ToString();
+    var searchTitle =
+        Context.Request.Query["searchTitle"].ToString();
 
-    var currentPage = ViewBag.CurrentPage ?? 1;
-    var totalPages = ViewBag.TotalPages ?? 1;
+    var cityId =
+        Context.Request.Query["cityId"].ToString();
+
+    var categoryId =
+        Context.Request.Query["categoryId"].ToString();
+
+    var jobType =
+        Context.Request.Query["jobType"].ToString();
+
+    var experienceLevel =
+        Context.Request.Query["experienceLevel"].ToString();
+
+    var minSalary =
+        Context.Request.Query["minSalary"].ToString();
+
+    var maxSalary =
+        Context.Request.Query["maxSalary"].ToString();
+
+    var sortOrder =
+        Context.Request.Query["sortOrder"].ToString();
+
+    var currentPage =
+        ViewBag.CurrentPage ?? 1;
+
+    var totalPages =
+        ViewBag.TotalPages ?? 1;
 }
 
 <div class="container mt-4">
 
+    <!-- Alerts -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
+
+            @TempData["Success"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
+
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show"
+             role="alert">
+
+            @TempData["Error"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
+            </button>
+
+        </div>
+    }
+
+
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0">Job Posts</h1>
 
-        @if (User.IsInRole("Company"))
-        {
-            <a asp-action="Create" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i>
-                Add New Job
+        <h1 class="mb-0">
+            Job Posts
+        </h1>
+
+        <div class="d-flex gap-2">
+
+            <!-- Sync LinkedIn Jobs -->
+            <a asp-action="SyncJobs"
+               class="btn btn-outline-success">
+
+                <i class="bi bi-cloud-download"></i>
+
+                Sync LinkedIn Jobs
+
             </a>
-        }
+
+
+            <!-- Add Job -->
+            @if (User.IsInRole("Company"))
+            {
+                <a asp-action="Create"
+                   class="btn btn-primary">
+
+                    <i class="bi bi-plus-lg"></i>
+
+                    Add New Job
+
+                </a>
+            }
+
+        </div>
+
     </div>
 
 
     <!-- Search & Filters -->
     <div class="card shadow-sm mb-4">
+
         <div class="card-body">
 
             <h5 class="card-title mb-3">
                 Search & Filter Jobs
             </h5>
 
-            <form asp-action="Index" method="get">
+            <form asp-action="Index"
+                  method="get">
 
                 <div class="row g-3">
 
+
                     <!-- Job Title -->
                     <div class="col-md-6 col-lg-4">
-                        <label class="form-label">Job Title</label>
+
+                        <label class="form-label">
+                            Job Title
+                        </label>
 
                         <input type="text"
                                name="searchTitle"
                                class="form-control"
                                placeholder="Search by job title..."
                                value="@searchTitle" />
+
                     </div>
 
 
                     <!-- City -->
                     <div class="col-md-6 col-lg-2">
-                        <label class="form-label">City</label>
+
+                        <label class="form-label">
+                            City
+                        </label>
 
                         @Html.DropDownList(
                             "cityId",
                             ViewBag.Cities as SelectList,
                             "All Cities",
-                            new { @class = "form-select" }
-                        )
+                            new
+                            {
+                                @class = "form-select"
+                            })
+
                     </div>
 
 
                     <!-- Category -->
                     <div class="col-md-6 col-lg-2">
-                        <label class="form-label">Category</label>
+
+                        <label class="form-label">
+                            Category
+                        </label>
 
                         @Html.DropDownList(
                             "categoryId",
                             ViewBag.Categories as SelectList,
                             "All Categories",
-                            new { @class = "form-select" }
-                        )
+                            new
+                            {
+                                @class = "form-select"
+                            })
+
                     </div>
 
 
                     <!-- Job Type -->
                     <div class="col-md-6 col-lg-2">
-                        <label class="form-label">Job Type</label>
 
-                        <select name="jobType" class="form-select">
+                        <label class="form-label">
+                            Job Type
+                        </label>
+
+                        <select name="jobType"
+                                class="form-select">
 
                             <option value="">
                                 All Job Types
                             </option>
 
-                            @foreach (var type in Enum.GetValues<JobType>())
+                            @foreach (
+                                var type
+                                in Enum.GetValues<JobType>())
                             {
                                 <option value="@type"
-                                        selected="@(jobType == type.ToString() ? "selected" : null)">
+                                        selected="@(jobType == type.ToString()
+                                                                                ? "selected"
+                                                                                : null)">
+
                                     @type
+
                                 </option>
                             }
 
                         </select>
+
                     </div>
 
 
-                    <!-- Experience Level -->
+                    <!-- Experience -->
                     <div class="col-md-6 col-lg-2">
-                        <label class="form-label">Experience</label>
 
-                        <select name="experienceLevel" class="form-select">
+                        <label class="form-label">
+                            Experience
+                        </label>
+
+                        <select name="experienceLevel"
+                                class="form-select">
 
                             <option value="">
                                 All Levels
                             </option>
 
-                            @foreach (var level in Enum.GetValues<ExperienceLevel>())
+                            @foreach (
+                                var level
+                                in Enum.GetValues<ExperienceLevel>())
                             {
                                 <option value="@level"
-                                        selected="@(experienceLevel == level.ToString() ? "selected" : null)">
+                                        selected="@(experienceLevel == level.ToString()
+                                                                                ? "selected"
+                                                                                : null)">
+
                                     @level
+
                                 </option>
                             }
 
                         </select>
+
                     </div>
 
 
                     <!-- Minimum Salary -->
                     <div class="col-md-6 col-lg-3">
-                        <label class="form-label">Minimum Salary</label>
+
+                        <label class="form-label">
+                            Minimum Salary
+                        </label>
 
                         <input type="number"
                                name="minSalary"
@@ -137,12 +257,16 @@
                                placeholder="Minimum salary"
                                value="@minSalary"
                                min="0" />
+
                     </div>
 
 
                     <!-- Maximum Salary -->
                     <div class="col-md-6 col-lg-3">
-                        <label class="form-label">Maximum Salary</label>
+
+                        <label class="form-label">
+                            Maximum Salary
+                        </label>
 
                         <input type="number"
                                name="maxSalary"
@@ -150,36 +274,58 @@
                                placeholder="Maximum salary"
                                value="@maxSalary"
                                min="0" />
+
                     </div>
 
 
                     <!-- Sort -->
                     <div class="col-md-6 col-lg-3">
-                        <label class="form-label">Sort By</label>
 
-                        <select name="sortOrder" class="form-select">
+                        <label class="form-label">
+                            Sort By
+                        </label>
+
+                        <select name="sortOrder"
+                                class="form-select">
 
                             <option value=""
-                                    selected="@(string.IsNullOrEmpty(sortOrder) ? "selected" : null)">
+                                    selected="@(string.IsNullOrEmpty(sortOrder)
+                                                                        ? "selected"
+                                                                        : null)">
+
                                 Newest
+
                             </option>
 
                             <option value="oldest"
-                                    selected="@(sortOrder == "oldest" ? "selected" : null)">
+                                    selected="@(sortOrder == "oldest"
+                                                                        ? "selected"
+                                                                        : null)">
+
                                 Oldest
+
                             </option>
 
                             <option value="salaryHigh"
-                                    selected="@(sortOrder == "salaryHigh" ? "selected" : null)">
+                                    selected="@(sortOrder == "salaryHigh"
+                                                                        ? "selected"
+                                                                        : null)">
+
                                 Highest Salary
+
                             </option>
 
                             <option value="salaryLow"
-                                    selected="@(sortOrder == "salaryLow" ? "selected" : null)">
+                                    selected="@(sortOrder == "salaryLow"
+                                                                        ? "selected"
+                                                                        : null)">
+
                                 Lowest Salary
+
                             </option>
 
                         </select>
+
                     </div>
 
 
@@ -188,12 +334,16 @@
 
                         <button type="submit"
                                 class="btn btn-success flex-grow-1">
+
                             Search
+
                         </button>
 
                         <a asp-action="Index"
                            class="btn btn-outline-secondary">
+
                             Reset
+
                         </a>
 
                     </div>
@@ -203,6 +353,7 @@
             </form>
 
         </div>
+
     </div>
 
 
@@ -216,15 +367,27 @@
                 <table class="table table-striped table-hover align-middle mb-0">
 
                     <thead class="table-dark">
+
                         <tr>
+
                             <th>Title</th>
+
                             <th>Company</th>
+
                             <th>City</th>
+
                             <th>Category</th>
+
                             <th>Type</th>
+
                             <th>Status</th>
-                            <th class="text-center">Actions</th>
+
+                            <th class="text-center">
+                                Actions
+                            </th>
+
                         </tr>
+
                     </thead>
 
 
@@ -238,11 +401,15 @@
 
                                     <!-- Title -->
                                     <td>
+
                                         <a asp-action="Details"
                                            asp-route-id="@job.Id"
                                            class="text-decoration-none fw-semibold">
+
                                             @job.Title
+
                                         </a>
+
                                     </td>
 
 
@@ -300,7 +467,9 @@
                                                 <a asp-action="Edit"
                                                    asp-route-id="@job.Id"
                                                    class="btn btn-sm btn-warning">
+
                                                     Edit
+
                                                 </a>
 
 
@@ -308,7 +477,9 @@
                                                 <a asp-action="Delete"
                                                    asp-route-id="@job.Id"
                                                    class="btn btn-sm btn-danger">
+
                                                     Delete
+
                                                 </a>
 
 
@@ -325,7 +496,9 @@
                                                         <button type="submit"
                                                                 class="btn btn-sm btn-dark"
                                                                 onclick="return confirm('Are you sure you want to close this job?')">
+
                                                             Close
+
                                                         </button>
 
                                                     </form>
@@ -338,7 +511,9 @@
                                             <a asp-action="Details"
                                                asp-route-id="@job.Id"
                                                class="btn btn-sm btn-outline-primary">
+
                                                 View
+
                                             </a>
                                         }
 
@@ -350,17 +525,24 @@
                         else
                         {
                             <tr>
+
                                 <td colspan="7"
                                     class="text-center py-5">
 
                                     <div class="text-muted">
-                                        <h5>No jobs found</h5>
+
+                                        <h5>
+                                            No jobs found
+                                        </h5>
+
                                         <p class="mb-0">
                                             Try changing your search or filters.
                                         </p>
+
                                     </div>
 
                                 </td>
+
                             </tr>
                         }
 
@@ -378,82 +560,76 @@
     <!-- Pagination -->
     @if (totalPages > 1)
     {
-        <nav class="mt-4"
-             aria-label="Job posts pagination">
+        <div class="d-flex justify-content-center align-items-center my-4">
 
-            <ul class="pagination justify-content-center">
+            <!-- Previous -->
+            @if (currentPage > 1)
+            {
+                <a asp-action="Index"
+                   asp-route-page="@(currentPage - 1)"
+                   asp-route-searchTitle="@searchTitle"
+                   asp-route-cityId="@cityId"
+                   asp-route-categoryId="@categoryId"
+                   asp-route-jobType="@jobType"
+                   asp-route-experienceLevel="@experienceLevel"
+                   asp-route-minSalary="@minSalary"
+                   asp-route-maxSalary="@maxSalary"
+                   asp-route-sortOrder="@sortOrder"
+                   class="btn btn-outline-primary me-3">
 
-                <!-- Previous -->
-                <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                    <i class="bi bi-chevron-left"></i>
+                    Previous
 
-                    <a class="page-link"
-                       asp-action="Index"
-                       asp-route-page="@(currentPage - 1)"
-                       asp-route-searchTitle="@searchTitle"
-                       asp-route-cityId="@cityId"
-                       asp-route-categoryId="@categoryId"
-                       asp-route-jobType="@jobType"
-                       asp-route-experienceLevel="@experienceLevel"
-                       asp-route-minSalary="@minSalary"
-                       asp-route-maxSalary="@maxSalary"
-                       asp-route-sortOrder="@sortOrder">
+                </a>
+            }
+            else
+            {
+                <button class="btn btn-outline-secondary me-3"
+                        disabled>
 
-                        Previous
+                    <i class="bi bi-chevron-left"></i>
+                    Previous
 
-                    </a>
-
-                </li>
-
-
-                <!-- Page Numbers -->
-                @for (int i = 1; i <= totalPages; i++)
-                {
-                    <li class="page-item @(i == currentPage ? "active" : "")">
-
-                        <a class="page-link"
-                           asp-action="Index"
-                           asp-route-page="@i"
-                           asp-route-searchTitle="@searchTitle"
-                           asp-route-cityId="@cityId"
-                           asp-route-categoryId="@categoryId"
-                           asp-route-jobType="@jobType"
-                           asp-route-experienceLevel="@experienceLevel"
-                           asp-route-minSalary="@minSalary"
-                           asp-route-maxSalary="@maxSalary"
-                           asp-route-sortOrder="@sortOrder">
-
-                            @i
-
-                        </a>
-
-                    </li>
-                }
+                </button>
+            }
 
 
-                <!-- Next -->
-                <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+            <!-- Current Page -->
+            <span class="fw-bold px-3 py-2 bg-light border rounded">
+                @currentPage
+            </span>
 
-                    <a class="page-link"
-                       asp-action="Index"
-                       asp-route-page="@(currentPage + 1)"
-                       asp-route-searchTitle="@searchTitle"
-                       asp-route-cityId="@cityId"
-                       asp-route-categoryId="@categoryId"
-                       asp-route-jobType="@jobType"
-                       asp-route-experienceLevel="@experienceLevel"
-                       asp-route-minSalary="@minSalary"
-                       asp-route-maxSalary="@maxSalary"
-                       asp-route-sortOrder="@sortOrder">
 
-                        Next
+            <!-- Next -->
+            @if (currentPage < totalPages)
+            {
+                <a asp-action="Index"
+                   asp-route-page="@(currentPage + 1)"
+                   asp-route-searchTitle="@searchTitle"
+                   asp-route-cityId="@cityId"
+                   asp-route-categoryId="@categoryId"
+                   asp-route-jobType="@jobType"
+                   asp-route-experienceLevel="@experienceLevel"
+                   asp-route-minSalary="@minSalary"
+                   asp-route-maxSalary="@maxSalary"
+                   asp-route-sortOrder="@sortOrder"
+                   class="btn btn-outline-primary ms-3">
 
-                    </a>
+                    Next
+                    <i class="bi bi-chevron-right"></i>
 
-                </li>
+                </a>
+            }
+            else
+            {
+                <button class="btn btn-outline-secondary ms-3"
+                        disabled>
 
-            </ul>
+                    Next
+                    <i class="bi bi-chevron-right"></i>
 
-        </nav>
+                </button>
+            }
+
+        </div>
     }
-
-</div>

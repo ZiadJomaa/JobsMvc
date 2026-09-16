@@ -42,20 +42,24 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
-                <div class="navbar-nav ms-auto p-4 p-lg-0">
-                    <a asp-controller="Home" asp-action="Index" class="nav-item nav-link active">Home</a>
-                    <a asp-controller="JobPosts" asp-action="Index" class="nav-item nav-link">Jobs</a>
-                    <a asp-controller="Companies" asp-action="Index" class="nav-item nav-link">Companies</a>
-                    
-                    <!-- Dashboard Link for Company Role Only -->
-                    @if (User.IsInRole("Company"))
-                    {
-                        <a asp-controller="JobPosts" asp-action="CompanyDashboard" class="nav-item nav-link">Dashboard</a>
-                    }
+<div class="navbar-nav ms-auto p-4 p-lg-0">
+    <a asp-controller="Home" asp-action="Index" class="nav-item nav-link active">Home</a>
+    <a asp-controller="JobPosts" asp-action="Index" class="nav-item nav-link">Jobs</a>
+    <a asp-controller="Companies" asp-action="Index" class="nav-item nav-link">Companies</a>
 
-                    <a href="#" class="nav-item nav-link">About</a>
-                    <a href="#" class="nav-item nav-link">Contact</a>
-                </div>
+    <a asp-controller="Ai" asp-action="Ask" class="nav-item nav-link">
+        <i class="bi bi-robot me-1"></i> Ask AI
+    </a>
+    
+    @if (User.IsInRole("Company"))
+    {
+        <a asp-controller="JobPosts" asp-action="CompanyDashboard" class="nav-item nav-link">Dashboard</a>
+    }
+
+    <a href="#" class="nav-item nav-link">About</a>
+    <a href="#" class="nav-item nav-link">Contact</a>
+</div>
+
                 <!-- Login Partial or Auth Buttons -->
                 <partial name="_LoginPartial" />
                 @if (User.IsInRole("Company"))

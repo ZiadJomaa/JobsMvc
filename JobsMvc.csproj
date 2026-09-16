@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-	    <NoWarn>$(NoWarn);NU1903</NoWarn>
-
-  <TargetFramework>net8.0</TargetFramework>
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
+    <TargetFramework>net8.0</TargetFramework>
+    <RuntimeFrameworkVersion>8.0.0</RuntimeFrameworkVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-JobsMvc-eac55cba-b2b4-4211-97e0-a9c74124ca82</UserSecretsId>
@@ -13,13 +13,13 @@
     <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
 
-<ItemGroup>
-  <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.*" />
-  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.*" />
-  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.*" />
-  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.*" />
-  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.*" />
-</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.*" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.*" />
+  </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Views\Admin\" />

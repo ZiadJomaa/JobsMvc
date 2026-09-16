@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using JobsMvc.Data;
 using JobsMvc.Models.Entities;
-// using JobsMvc.Services;
+using JobsMvc.Services; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +26,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
+
+builder.Services.AddScoped<AiService>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();

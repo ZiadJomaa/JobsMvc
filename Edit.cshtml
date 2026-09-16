@@ -1,0 +1,100 @@
+﻿@using JobsMvc.ViewModels.JobPost
+@model JobPostFormViewModel
+
+@{
+    ViewData["Title"] = "Edit Job";
+}
+
+<h1>Edit Job</h1>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="JobType" class="form-label"></label>
+        <select asp-for="JobType" class="form-select"
+                asp-items="Html.GetEnumSelectList<JobsMvc.Models.Enums.JobType>()">
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ExperienceLevel" class="form-label"></label>
+        <select asp-for="ExperienceLevel" class="form-select"
+                asp-items="Html.GetEnumSelectList<JobsMvc.Models.Enums.ExperienceLevel>()">
+        </select>
+    </div>
+
+    <div class="row">
+        <div class="col mb-3">
+            <label asp-for="MinSalary" class="form-label"></label>
+            <input asp-for="MinSalary" class="form-control" />
+        </div>
+
+        <div class="col mb-3">
+            <label asp-for="MaxSalary" class="form-label"></label>
+            <input asp-for="MaxSalary" class="form-control" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ClosingDate" class="form-label"></label>
+        <input asp-for="ClosingDate" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CityId" class="form-label"></label>
+        <select asp-for="CityId" class="form-select"
+                asp-items="Model.Cities">
+        </select>
+
+        <span asp-validation-for="CityId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CategoryId" class="form-label"></label>
+        <select asp-for="CategoryId" class="form-select"
+                asp-items="Model.Categories">
+        </select>
+
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Required Skills</label>
+
+        <div class="border rounded p-2" style="max-height:200px; overflow-y:auto;">
+            @foreach (var skill in Model.AllSkills)
+            {
+                <div class="form-check">
+                    <input type="checkbox"
+                           class="form-check-input"
+                           name="SelectedSkillIds"
+                           value="@skill.Id"
+                           id="skill_@skill.Id"
+                           checked="@(Model.SelectedSkillIds.Contains(skill.Id))" />
+
+                    <label class="form-check-label" for="skill_@skill.Id">
+                        @skill.Name
+                    </label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</form>

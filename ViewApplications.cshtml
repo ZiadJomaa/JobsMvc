@@ -1,0 +1,303 @@
+﻿@model JobsMvc.Models.Entities.JobPost
+
+@{
+    ViewData["Title"] = "Applicants for " + Model.Title;
+
+    var selectedStatus =
+        ViewBag.SelectedStatus as JobsMvc.Models.Enums.ApplicationStatus?;
+}
+
+<div class="container-xxl py-5">
+
+    <div class="container">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+
+            <div>
+                <h2>Applicants</h2>
+                <p class="text-muted mb-0">
+                    @Model.Title
+                </p>
+            </div>
+
+            <a asp-action="CompanyDashboard"
+               class="btn btn-outline-secondary">
+                Back to Dashboard
+            </a>
+
+        </div>
+
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["Success"]
+            </div>
+        }
+
+
+        <!-- Status Filter -->
+
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-body">
+
+                <form asp-action="ViewApplications"
+                      method="get"
+                      class="row g-3 align-items-end">
+
+                    <input type="hidden"
+                           name="id"
+                           value="@Model.Id" />
+
+                    <div class="col-md-5">
+
+                        <label class="form-label">
+                            Filter by Status
+                        </label>
+
+                        <select name="status"
+                                class="form-select">
+
+                            <option value="">
+                                All Applicants
+                            </option>
+
+                            @foreach (var status in
+                                Enum.GetValues<JobsMvc.Models.Enums.ApplicationStatus>())
+                            {
+                                if (selectedStatus.HasValue &&
+                                    selectedStatus.Value == status)
+                                {
+                                    <option value="@status" selected>
+                                        @status
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@status">
+                                        @status
+                                    </option>
+                                }
+                            }
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <button type="submit"
+                                class="btn btn-primary">
+                            Filter
+                        </button>
+
+                        <a asp-action="ViewApplications"
+                           asp-route-id="@Model.Id"
+                           class="btn btn-outline-secondary">
+                            Clear
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- Applicants Table -->
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body">
+
+                @if (Model.Applications != null &&
+                     Model.Applications.Any())
+                {
+                    <div class="table-responsive">
+
+                        <table class="table table-hover align-middle">
+
+                            <thead class="table-light">
+
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Applied At</th>
+                                    <th>Status</th>
+                                    <th>CV</th>
+                                    <th>Private Note</th>
+                                    <th>Update</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                @foreach (var app in Model.Applications)
+                                {
+                                    <tr>
+
+                                        <td>
+                                            <strong>
+                                                @(app.JobSeeker?.FullName ?? "Unknown Applicant")
+                                            </strong>
+
+                                            @if (!string.IsNullOrEmpty(app.JobSeeker?.Title))
+                                            {
+                                                <br />
+                                                <small class="text-muted">
+                                                    @app.JobSeeker.Title
+                                                </small>
+                                            }
+                                        </td>
+
+                                        <td>
+                                            @(app.AppliedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm"))
+                                        </td>
+
+                                        <td>
+                                            @switch (app.Status)
+                                            {
+                                                case JobsMvc.Models.Enums.ApplicationStatus.Applied:
+                                                    <span class="badge bg-primary">
+                                                        Applied
+                                                    </span>
+                                                    break;
+
+                                                case JobsMvc.Models.Enums.ApplicationStatus.UnderReview:
+                                                    <span class="badge bg-warning text-dark">
+                                                        Under Review
+                                                    </span>
+                                                    break;
+
+                                                case JobsMvc.Models.Enums.ApplicationStatus.Interview:
+                                                    <span class="badge bg-info text-dark">
+                                                        Interview
+                                                    </span>
+                                                    break;
+
+                                                case JobsMvc.Models.Enums.ApplicationStatus.Accepted:
+                                                    <span class="badge bg-success">
+                                                        Accepted
+                                                    </span>
+                                                    break;
+
+                                                case JobsMvc.Models.Enums.ApplicationStatus.Rejected:
+                                                    <span class="badge bg-danger">
+                                                        Rejected
+                                                    </span>
+                                                    break;
+                                            }
+                                        </td>
+
+                                        <td>
+                                            @{
+                                                var defaultResume =
+                                                    app.JobSeeker?.Resumes?
+                                                        .FirstOrDefault(r => r.IsDefault);
+                                            }
+
+                                            @if (defaultResume != null)
+                                            {
+                                                <a href="@defaultResume.FilePath"
+                                                   target="_blank"
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    View CV
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">
+                                                    No CV
+                                                </span>
+                                            }
+                                        </td>
+
+                                        <td style="min-width: 280px;">
+
+                                            <form asp-action="UpdateApplicationStatus"
+                                                  method="post">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="applicationId"
+                                                       value="@app.Id" />
+
+                                                <div class="mb-2">
+
+                                                    <label class="form-label">
+                                                        Private Note
+                                                    </label>
+
+                                                    <textarea name="privateNote"
+                                                              class="form-control form-control-sm"
+                                                              rows="2"
+                                                              placeholder="Private HR note...">@app.HrPrivateNote</textarea>
+
+                                                </div>
+
+                                                <div class="mb-2">
+
+                                                    <label class="form-label">
+                                                        Status
+                                                    </label>
+
+                                                    <select name="status"
+                                                            class="form-select form-select-sm">
+
+                                                        @foreach (var status in
+                                                            Enum.GetValues<JobsMvc.Models.Enums.ApplicationStatus>())
+                                                        {
+                                                            if (app.Status == status)
+                                                            {
+                                                                <option value="@status" selected>
+                                                                    @status
+                                                                </option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@status">
+                                                                    @status
+                                                                </option>
+                                                            }
+                                                        }
+
+                                                    </select>
+
+                                                </div>
+
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-primary">
+                                                    Update
+                                                </button>
+
+                                            </form>
+
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info mb-0">
+                        No applicants found for this filter.
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

@@ -877,8 +877,10 @@ namespace JobsMvc.Controllers
 
             client.Timeout = TimeSpan.FromMinutes(5);
 
-            string baseUrl = _configuration["ApifySettings:DatasetUrl"];
-            string apiToken = _configuration["ApifySettings:ApiToken"];
+            string baseUrl =
+                _configuration["ApifySettings:DatasetUrl"] ?? string.Empty;
+            string apiToken =
+                _configuration["ApifySettings:ApiToken"] ?? string.Empty;
             string apifyUrl = $"{baseUrl}?token={apiToken}";
             try
             {

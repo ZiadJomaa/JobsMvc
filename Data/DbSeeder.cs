@@ -191,9 +191,6 @@ public static class DbSeeder
                 }
             }
         }
-
-        
-
         var company = await context.CompanyProfiles
             .FirstOrDefaultAsync(c => c.CompanyName == "Demo Company");
 

@@ -30,17 +30,10 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 var app = builder.Build();
 
-// HTTP request pipeline
+var app = builder.Build();
+
+// HTTP request pipeline 
 app.UseDeveloperExceptionPage();
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
-else
-{
-    app.UseDeveloperExceptionPage();
-}
 
 app.UseStatusCodePagesWithReExecute("/Home/NotFound");
 
@@ -63,7 +56,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
-   
+
 // Seed initial data
   using (var scope = app.Services.CreateScope())
 {
